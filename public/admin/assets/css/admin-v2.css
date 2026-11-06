@@ -1,0 +1,3290 @@
+/* =============================================================================
+   JJ's Firewood — Admin V2
+   A mobile-first design system layered on top of Bootstrap 5.
+
+   Loaded AFTER bootstrap and AFTER any page-level @push('styles') block, so it
+   is the final word on shell + component styling. Page-specific one-off styles
+   from the legacy pages are neutralised in section 14.
+
+   Sections
+     1  Tokens
+     2  Base
+     3  App shell
+     4  Sidebar / drawer
+     5  Top bar
+     6  Bottom tab bar
+     7  Page header
+     8  Cards & surfaces
+     9  Buttons
+    10  Forms
+    11  Tables & DataTables (incl. mobile card mode)
+    12  Badges, pills, status
+    13  Overlays: modals, toasts, alerts, empty states
+    14  Legacy overrides
+    15  Utilities
+   ========================================================================== */
+
+/* -----------------------------------------------------------------------------
+   1. Tokens
+   -------------------------------------------------------------------------- */
+:root {
+    /* Brand — the customer app's #A52A2A brick, nudged brighter so buttons and
+       active states still read on a phone screen in daylight. Every other
+       colour below is lifted verbatim from assets/colors/colors.xml, so the
+       admin and the app are visibly the same product. */
+    --av-primary: #b93030;
+    --av-primary-hover: #9c2828;
+    --av-primary-active: #852222;
+    --av-primary-soft: #f9efef;
+    --av-primary-contrast: #ffffff;
+    --av-accent: #a52a2a;
+
+    /* Filled surfaces (buttons, chart bars) are their own background, so they
+       keep the deep brand red in both themes. --av-primary is the *ink* colour
+       and has to lighten on dark, which would leave buttons looking pink. */
+    --av-primary-solid: #b93030;
+    --av-primary-solid-hover: #9c2828;
+    --av-primary-solid-fg: #ffffff;
+
+    /* Neutrals — app palette */
+    --av-bg: #f5f5f7;           /* cF5F5F7 */
+    --av-surface: #ffffff;      /* cFFFFFF */
+    --av-surface-2: #fafafa;    /* cFAFAFA */
+    --av-surface-3: #f1f1f3;
+    --av-border: #e6e6e6;       /* cE6E6E6 */
+    --av-border-strong: #d9d9d9;/* cD9D9D9 */
+    --av-text: #212121;         /* c212121 */
+    --av-text-2: #4b5563;       /* c4B5563 */
+    --av-muted: #616161;        /* c616161 */
+    --av-faint: #94a3b8;        /* c94A3B8 */
+
+    /* Semantic — app palette */
+    --av-success: #3f8c1c;      /* c4CA821, darkened for text contrast */
+    --av-success-soft: #eef7e8;
+    --av-warning: #b45f11;      /* cFC9039, darkened for text contrast */
+    --av-warning-soft: #fff3e8;
+    --av-danger: #db381d;       /* cDB381D */
+    --av-danger-soft: #fdeeeb;
+    --av-info: #2563eb;         /* c3B82F6, darkened for text contrast */
+    --av-info-soft: #eff6ff;
+
+    /* Shape */
+    --av-r-xs: 6px;
+    --av-r-sm: 8px;
+    --av-r: 12px;
+    --av-r-lg: 16px;
+    --av-r-pill: 999px;
+
+    /* Elevation */
+    --av-shadow-xs: 0 1px 2px rgba(16, 24, 40, .05);
+    --av-shadow-sm: 0 1px 3px rgba(16, 24, 40, .08), 0 1px 2px rgba(16, 24, 40, .04);
+    --av-shadow-md: 0 4px 12px rgba(16, 24, 40, .08), 0 2px 4px rgba(16, 24, 40, .04);
+    --av-shadow-lg: 0 12px 32px rgba(16, 24, 40, .14);
+    --av-ring: 0 0 0 3px rgba(185, 48, 48, .2);
+
+    /* Layout */
+    --av-topbar-h: 56px;
+    --av-sidebar-w: 268px;
+    --av-bottomnav-h: 58px;
+    --av-safe-b: env(safe-area-inset-bottom, 0px);
+    --av-gutter: 16px;
+
+    /* Type */
+    --av-font: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue",
+        Arial, "Noto Sans", sans-serif, "Apple Color Emoji", "Segoe UI Emoji";
+    --av-font-mono: ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, monospace;
+
+    /* Z-index scale */
+    --av-z-topbar: 1030;
+    --av-z-savebar: 1035;
+    --av-z-bottomnav: 1040;
+    --av-z-backdrop: 1070;
+    --av-z-drawer: 1080;
+}
+
+[data-theme="dark"] {
+    /* The brick has to be lightened here — #b93030 on a near-black surface
+       fails contrast badly. Neutrals follow the app's dark scaffold. */
+    --av-primary: #e07a7a;
+    --av-primary-hover: #eb8f8f;
+    --av-primary-active: #f5a3a3;
+    --av-primary-soft: rgba(224, 122, 122, .15);
+    --av-primary-contrast: #1a0a0a;
+
+    /* Slightly lifted off the light-mode red so it does not go muddy against a
+       near-black page, but still unmistakably the brand rather than pink. */
+    --av-primary-solid: #c33636;
+    --av-primary-solid-hover: #d24242;
+    --av-primary-solid-fg: #ffffff;
+
+    --av-bg: #121212;           /* c121212 */
+    --av-surface: #1c1c1c;
+    --av-surface-2: #212121;    /* c212121 */
+    --av-surface-3: #2a2a2a;
+    --av-border: #2f2f2f;
+    --av-border-strong: #404040;/* c404040 */
+    --av-text: #f5f5f5;
+    --av-text-2: #d0d0d0;
+    --av-muted: #a8a8a8;
+    --av-faint: #7b7b7b;        /* c7B7B7B */
+
+    --av-success: #86c027;      /* c86C027 */
+    --av-success-soft: rgba(134, 192, 39, .14);
+    --av-warning: #fc9039;      /* cFC9039 */
+    --av-warning-soft: rgba(252, 144, 57, .14);
+    --av-danger: #f4705a;
+    --av-danger-soft: rgba(244, 112, 90, .14);
+    --av-info: #60a5fa;
+    --av-info-soft: rgba(96, 165, 250, .14);
+
+    --av-shadow-xs: 0 1px 2px rgba(0, 0, 0, .4);
+    --av-shadow-sm: 0 1px 3px rgba(0, 0, 0, .45);
+    --av-shadow-md: 0 4px 14px rgba(0, 0, 0, .5);
+    --av-shadow-lg: 0 16px 40px rgba(0, 0, 0, .6);
+    --av-ring: 0 0 0 3px rgba(224, 122, 122, .28);
+
+    color-scheme: dark;
+}
+
+/* -----------------------------------------------------------------------------
+   2. Base
+   -------------------------------------------------------------------------- */
+*,
+*::before,
+*::after {
+    box-sizing: border-box;
+}
+
+html {
+    -webkit-text-size-adjust: 100%;
+}
+
+body.av-body {
+    margin: 0;
+    min-height: 100vh;
+    background: var(--av-bg);
+    color: var(--av-text);
+    font-family: var(--av-font);
+    font-size: 14px;
+    line-height: 1.55;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    overflow-x: hidden;
+}
+
+body.av-lock {
+    overflow: hidden;
+}
+
+/* Element defaults are wrapped in :where() so they contribute no specificity.
+   Without it, `.av-body a` (0,1,1) would beat every single-class component
+   rule such as `.av-nav__link` (0,1,0) and paint the whole shell orange. */
+:where(.av-body) h1,
+:where(.av-body) h2,
+:where(.av-body) h3,
+:where(.av-body) h4,
+:where(.av-body) h5,
+:where(.av-body) h6 {
+    color: var(--av-text);
+    font-weight: 650;
+    letter-spacing: -.01em;
+    margin: 0 0 .5rem;
+}
+
+:where(.av-body) h1 { font-size: 1.5rem; }
+:where(.av-body) h2 { font-size: 1.25rem; }
+:where(.av-body) h3 { font-size: 1.125rem; }
+:where(.av-body) h4 { font-size: 1rem; }
+:where(.av-body) h5 { font-size: .9375rem; }
+:where(.av-body) h6 { font-size: .875rem; }
+
+:where(.av-body) a {
+    color: var(--av-primary);
+    text-decoration: none;
+}
+
+:where(.av-body) a:hover {
+    color: var(--av-primary-hover);
+}
+
+:where(.av-body) hr {
+    border: 0;
+    border-top: 1px solid var(--av-border);
+    opacity: 1;
+    margin: 1.25rem 0;
+}
+
+:where(.av-body) p { color: var(--av-text-2); }
+:where(.av-body) small, :where(.av-body) .small { font-size: .8125rem; }
+.text-muted { color: var(--av-muted) !important; }
+
+::selection {
+    background: var(--av-primary-solid);
+    color: var(--av-primary-solid-fg);
+}
+
+/* Icon glyphs ------------------------------------------------------------
+   Icon fonts are inline elements with no intrinsic spacing, so `<i class="fa
+   fa-x"></i> Label` renders the glyph flush against the word, and inside a
+   centred button the glyph sits off the vertical centre. Two rules fix both
+   everywhere, without touching the pages. */
+.av-body [class^="fa fa-"],
+.av-body [class*=" fa-"],
+.av-body [class^="fe fe-"],
+.av-body [class*=" fe-"] {
+    line-height: 1;
+    vertical-align: -.055em;
+}
+
+/* Breathing room before adjacent text — skipped when the page already set a
+   Bootstrap margin utility. */
+.av-body i[class*="fa-"]:first-child:not([class*="me-"]):not([class*="mr-"]):not([class*="m-"]),
+.av-body i[class*="fe-"]:first-child:not([class*="me-"]):not([class*="mr-"]):not([class*="m-"]) {
+    margin-right: .4em;
+}
+
+/* …except inside anything that centres its content with flex + gap, where a
+   margin would both double the spacing and knock icon-only buttons off-centre. */
+.av-body .btn > i,
+.av-body .av-iconbtn > i,
+.av-body .nav-link > i,
+.av-body .av-menu__item > i,
+.av-body .av-tabbar__item > i,
+.av-body .page-link > i,
+.av-body .av-seg__item > i {
+    margin: 0 !important;
+}
+
+/* Focus is always visible for keyboard users, never a mouse-click halo. */
+.av-body :focus-visible {
+    outline: 2px solid var(--av-primary);
+    outline-offset: 2px;
+}
+
+/* Slim scrollbars on desktop; mobile uses the native overlay bars. */
+@media (pointer: fine) {
+    .av-scroll::-webkit-scrollbar { width: 8px; height: 8px; }
+    .av-scroll::-webkit-scrollbar-track { background: transparent; }
+    .av-scroll::-webkit-scrollbar-thumb {
+        background: var(--av-border-strong);
+        border-radius: var(--av-r-pill);
+    }
+    .av-scroll::-webkit-scrollbar-thumb:hover { background: var(--av-faint); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    *, *::before, *::after {
+        animation-duration: .01ms !important;
+        transition-duration: .01ms !important;
+        scroll-behavior: auto !important;
+    }
+}
+
+/* -----------------------------------------------------------------------------
+   3. App shell
+   -------------------------------------------------------------------------- */
+.av-shell {
+    display: flex;
+    min-height: 100vh;
+}
+
+.av-main {
+    flex: 1 1 auto;
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+}
+
+.av-content {
+    flex: 1 0 auto;
+    padding: var(--av-gutter);
+    /* Bottom nav + iOS home indicator clearance. */
+    padding-bottom: calc(var(--av-bottomnav-h) + var(--av-safe-b) + 24px);
+    max-width: 1600px;
+    width: 100%;
+    margin: 0 auto;
+}
+
+.av-footer {
+    flex: 0 0 auto;
+    padding: 14px var(--av-gutter) calc(14px + var(--av-bottomnav-h) + var(--av-safe-b));
+    color: var(--av-faint);
+    font-size: .75rem;
+    text-align: center;
+    border-top: 1px solid var(--av-border);
+}
+
+@media (min-width: 992px) {
+    .av-content {
+        padding: 24px 28px 40px;
+    }
+
+    .av-footer {
+        padding: 16px 28px;
+    }
+}
+
+/* Loader shown until the shell script boots. */
+#av-loader {
+    position: fixed;
+    inset: 0;
+    z-index: 2000;
+    display: grid;
+    place-items: center;
+    background: var(--av-bg);
+    transition: opacity .2s ease;
+}
+
+#av-loader.is-hidden {
+    opacity: 0;
+    pointer-events: none;
+}
+
+.av-spinner {
+    width: 28px;
+    height: 28px;
+    border: 3px solid var(--av-border-strong);
+    border-top-color: var(--av-primary);
+    border-radius: 50%;
+    animation: av-spin .7s linear infinite;
+}
+
+@keyframes av-spin { to { transform: rotate(360deg); } }
+
+/* Sign-in screen — no shell, just a centred panel. */
+.av-auth {
+    display: grid;
+    place-items: center;
+    min-height: 100dvh;
+    padding: 24px 16px calc(24px + var(--av-safe-b));
+}
+
+.av-auth__panel {
+    width: 100%;
+    max-width: 380px;
+    padding: 28px 24px 32px;
+    background: var(--av-surface);
+    border: 1px solid var(--av-border);
+    border-radius: var(--av-r-lg);
+    box-shadow: var(--av-shadow-md);
+}
+
+.av-auth__brand {
+    display: flex;
+    justify-content: center;
+    margin-bottom: 18px;
+    color: var(--av-primary);
+}
+
+.av-auth__brand img { max-height: 46px; max-width: 190px; }
+
+.av-auth__title {
+    margin: 0;
+    font-size: 1.375rem;
+    text-align: center;
+}
+
+.av-auth__sub {
+    margin: 4px 0 22px;
+    color: var(--av-muted);
+    font-size: .8438rem;
+    text-align: center;
+}
+
+.av-auth .btn-lg { width: 100%; margin-top: 4px; }
+
+/* -----------------------------------------------------------------------------
+   4. Sidebar / drawer
+   -------------------------------------------------------------------------- */
+.av-sidebar {
+    flex: 0 0 var(--av-sidebar-w);
+    width: var(--av-sidebar-w);
+    background: var(--av-surface);
+    border-right: 1px solid var(--av-border);
+    display: flex;
+    flex-direction: column;
+    position: sticky;
+    top: 0;
+    height: 100vh;
+    z-index: var(--av-z-drawer);
+}
+
+.av-sidebar__head {
+    flex: 0 0 auto;
+    height: var(--av-topbar-h);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+    padding: 0 14px;
+    border-bottom: 1px solid var(--av-border);
+}
+
+.av-brand {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    min-width: 0;
+    color: var(--av-text);
+    font-weight: 650;
+}
+
+.av-brand:hover { color: var(--av-text); }
+
+/* The brand mark is the app's badge logo: solid black artwork on transparent.
+   Inverting it in dark mode is cheaper and stays perfectly in sync with the
+   app compared with maintaining a second file. */
+.av-logo {
+    width: auto;
+    object-fit: contain;
+    flex: 0 0 auto;
+}
+
+[data-theme="dark"] .av-logo {
+    filter: invert(1);
+}
+
+.av-brand img {
+    max-height: 30px;
+    max-width: 150px;
+    width: auto;
+    object-fit: contain;
+}
+
+.av-brand__word {
+    font-size: .9375rem;
+    font-weight: 700;
+    letter-spacing: -.01em;
+    line-height: 1.15;
+}
+
+.av-sidebar__search {
+    flex: 0 0 auto;
+    padding: 12px 14px;
+    border-bottom: 1px solid var(--av-border);
+}
+
+.av-navsearch {
+    position: relative;
+}
+
+.av-navsearch .av-icon {
+    position: absolute;
+    left: 10px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: var(--av-faint);
+    pointer-events: none;
+}
+
+/* The generic field rule in section 10 is `.av-body input[type="search"]`,
+   i.e. (0,2,1). Matching that specificity only produces a tie, and since
+   section 10 comes later it would still win — collapsing the 38px reserved for
+   the icon down to 12px and printing the placeholder under the magnifier.
+   The attribute selector here takes this to (0,3,1) so the outcome no longer
+   depends on where in the file these rules sit. */
+.av-body .av-navsearch input[type="search"],
+.av-body .av-navsearch input {
+    width: 100%;
+    height: 40px;
+    min-height: 40px;
+    padding: 0 12px 0 38px;
+    font-size: 14px;
+    color: var(--av-text);
+    background: var(--av-surface-3);
+    border: 1px solid transparent;
+    border-radius: var(--av-r-sm);
+}
+
+.av-body .av-navsearch input::placeholder { color: var(--av-faint); }
+
+.av-body .av-navsearch input:focus {
+    outline: none;
+    background: var(--av-surface);
+    border-color: var(--av-primary);
+    box-shadow: var(--av-ring);
+}
+
+/* Reusable "field with a leading icon". Use on a wrapper around an icon and an
+   input; the input keeps whatever other classes it already has. */
+.av-input-icon {
+    position: relative;
+    display: block;
+}
+
+.av-input-icon > svg,
+.av-input-icon > i {
+    position: absolute;
+    left: 12px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: var(--av-faint);
+    pointer-events: none;
+    z-index: 2;
+}
+
+.av-body .av-input-icon > .form-control,
+.av-body .av-input-icon > input {
+    padding-left: 38px;
+}
+
+.av-nav {
+    flex: 1 1 auto;
+    overflow-y: auto;
+    overscroll-behavior: contain;
+    -webkit-overflow-scrolling: touch;
+    padding: 10px 10px 20px;
+}
+
+.av-nav__group + .av-nav__group { margin-top: 14px; }
+
+.av-nav__title {
+    padding: 6px 10px;
+    font-size: .6875rem;
+    font-weight: 700;
+    letter-spacing: .06em;
+    text-transform: uppercase;
+    color: var(--av-faint);
+}
+
+.av-nav__link,
+.av-nav__toggle {
+    display: flex;
+    align-items: center;
+    gap: 11px;
+    width: 100%;
+    /* 44px keeps every nav row a comfortable thumb target. */
+    min-height: 44px;
+    padding: 9px 10px;
+    border: 0;
+    border-radius: var(--av-r-sm);
+    background: transparent;
+    color: var(--av-text-2);
+    font-size: .875rem;
+    font-weight: 500;
+    text-align: left;
+    cursor: pointer;
+    transition: background .15s ease, color .15s ease;
+}
+
+.av-nav__link:hover,
+.av-nav__toggle:hover {
+    background: var(--av-surface-3);
+    color: var(--av-text);
+}
+
+.av-nav__link .av-icon,
+.av-nav__toggle .av-icon {
+    flex: 0 0 auto;
+    color: var(--av-faint);
+}
+
+.av-nav__label {
+    flex: 1 1 auto;
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.av-nav__link.is-active {
+    background: var(--av-primary-soft);
+    color: var(--av-primary);
+    font-weight: 600;
+}
+
+.av-nav__link.is-active .av-icon { color: var(--av-primary); }
+
+.av-nav__toggle.is-active { color: var(--av-text); }
+.av-nav__toggle.is-active .av-icon { color: var(--av-primary); }
+
+.av-nav__caret {
+    flex: 0 0 auto;
+    color: var(--av-faint);
+    transition: transform .18s ease;
+}
+
+.av-nav__toggle[aria-expanded="true"] .av-nav__caret { transform: rotate(180deg); }
+
+.av-nav__sub {
+    list-style: none;
+    margin: 2px 0 4px;
+    padding: 0 0 0 22px;
+    display: none;
+}
+
+.av-nav__sub.is-open { display: block; }
+
+.av-nav__sub a {
+    display: flex;
+    align-items: center;
+    min-height: 40px;
+    padding: 8px 10px;
+    border-left: 2px solid var(--av-border);
+    border-radius: 0 var(--av-r-xs) var(--av-r-xs) 0;
+    color: var(--av-muted);
+    font-size: .8438rem;
+}
+
+.av-nav__sub a:hover {
+    background: var(--av-surface-3);
+    color: var(--av-text);
+}
+
+.av-nav__sub a.is-active {
+    border-left-color: var(--av-primary);
+    color: var(--av-primary);
+    font-weight: 600;
+}
+
+.av-nav__badge {
+    flex: 0 0 auto;
+    min-width: 20px;
+    height: 20px;
+    padding: 0 6px;
+    display: inline-grid;
+    place-items: center;
+    border-radius: var(--av-r-pill);
+    background: var(--av-danger);
+    color: #fff;
+    font-size: .6875rem;
+    font-weight: 700;
+}
+
+.av-nav__empty {
+    padding: 20px 12px;
+    color: var(--av-faint);
+    font-size: .8125rem;
+    text-align: center;
+    display: none;
+}
+
+.av-nav.is-filtered .av-nav__empty:only-child,
+.av-nav__empty.is-shown { display: block; }
+
+.av-sidebar__foot {
+    flex: 0 0 auto;
+    border-top: 1px solid var(--av-border);
+    padding: 10px;
+}
+
+.av-userchip {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 8px;
+    border-radius: var(--av-r-sm);
+    min-width: 0;
+}
+
+.av-userchip img,
+.av-avatar {
+    flex: 0 0 auto;
+    width: 34px;
+    height: 34px;
+    border-radius: 50%;
+    object-fit: cover;
+    background: var(--av-surface-3);
+}
+
+.av-avatar--initials {
+    display: inline-grid;
+    place-items: center;
+    background: var(--av-primary-soft);
+    color: var(--av-primary);
+    font-weight: 700;
+    letter-spacing: .02em;
+    line-height: 1;
+    text-transform: uppercase;
+}
+
+.av-userchip__meta { min-width: 0; flex: 1 1 auto; }
+
+.av-userchip__name {
+    font-size: .8438rem;
+    font-weight: 600;
+    color: var(--av-text);
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.av-userchip__role {
+    font-size: .75rem;
+    color: var(--av-faint);
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+/* Mobile: sidebar becomes an off-canvas drawer. */
+@media (max-width: 991.98px) {
+    .av-sidebar {
+        position: fixed;
+        top: 0;
+        left: 0;
+        bottom: 0;
+        height: 100dvh;
+        width: min(88vw, var(--av-sidebar-w));
+        flex-basis: auto;
+        transform: translateX(-100%);
+        transition: transform .24s cubic-bezier(.32, .72, 0, 1);
+        box-shadow: var(--av-shadow-lg);
+        border-right: 0;
+        will-change: transform;
+    }
+
+    body.av-drawer-open .av-sidebar { transform: translateX(0); }
+
+    .av-backdrop {
+        position: fixed;
+        inset: 0;
+        z-index: var(--av-z-backdrop);
+        background: rgba(16, 24, 40, .48);
+        opacity: 0;
+        pointer-events: none;
+        transition: opacity .24s ease;
+        -webkit-backdrop-filter: blur(2px);
+        backdrop-filter: blur(2px);
+    }
+
+    body.av-drawer-open .av-backdrop {
+        opacity: 1;
+        pointer-events: auto;
+    }
+}
+
+@media (min-width: 992px) {
+    .av-backdrop { display: none; }
+}
+
+/* -----------------------------------------------------------------------------
+   5. Top bar
+   -------------------------------------------------------------------------- */
+.av-topbar {
+    position: sticky;
+    top: 0;
+    z-index: var(--av-z-topbar);
+    height: var(--av-topbar-h);
+    flex: 0 0 auto;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 0 10px;
+    background: var(--av-surface);
+    border-bottom: 1px solid var(--av-border);
+}
+
+@media (min-width: 992px) {
+    .av-topbar { padding: 0 20px; }
+}
+
+/* The page renders its own <h1>, so the bar title would just repeat it. It
+   fades in once that heading has scrolled away and the context is lost. */
+.av-topbar__title {
+    flex: 1 1 auto;
+    min-width: 0;
+    margin: 0;
+    font-size: .9375rem;
+    font-weight: 650;
+    color: var(--av-text);
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    opacity: 0;
+    transform: translateY(3px);
+    transition: opacity .18s ease, transform .18s ease;
+}
+
+.av-topbar.is-scrolled .av-topbar__title {
+    opacity: 1;
+    transform: none;
+}
+
+.av-topbar.is-scrolled {
+    box-shadow: var(--av-shadow-sm);
+}
+
+.av-iconbtn {
+    flex: 0 0 auto;
+    width: 40px;
+    height: 40px;
+    display: inline-grid;
+    place-items: center;
+    border: 0;
+    border-radius: var(--av-r-sm);
+    background: transparent;
+    color: var(--av-text-2);
+    cursor: pointer;
+    transition: background .15s ease, color .15s ease;
+    -webkit-tap-highlight-color: transparent;
+}
+
+.av-iconbtn:hover {
+    background: var(--av-surface-3);
+    color: var(--av-text);
+}
+
+.av-iconbtn--brand { color: var(--av-primary); }
+
+/* Desktop shows the logo in the sidebar; mobile shows it in the bar. */
+.av-topbar__brand img { max-height: 26px; max-width: 120px; }
+
+.av-menu {
+    min-width: 220px;
+    padding: 6px;
+    border: 1px solid var(--av-border);
+    border-radius: var(--av-r);
+    background: var(--av-surface);
+    box-shadow: var(--av-shadow-md);
+}
+
+.av-menu__item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    min-height: 42px;
+    padding: 8px 10px;
+    border: 0;
+    width: 100%;
+    background: transparent;
+    border-radius: var(--av-r-sm);
+    color: var(--av-text-2);
+    font-size: .875rem;
+    text-align: left;
+    cursor: pointer;
+}
+
+.av-menu__item:hover {
+    background: var(--av-surface-3);
+    color: var(--av-text);
+}
+
+.av-menu__item .av-icon { color: var(--av-faint); }
+.av-menu__item--danger { color: var(--av-danger); }
+.av-menu__item--danger .av-icon { color: var(--av-danger); }
+
+.av-menu__sep {
+    height: 1px;
+    margin: 6px 4px;
+    background: var(--av-border);
+}
+
+.av-menu__head {
+    padding: 8px 10px 10px;
+    border-bottom: 1px solid var(--av-border);
+    margin-bottom: 6px;
+}
+
+/* -----------------------------------------------------------------------------
+   6. Bottom tab bar (mobile only)
+   -------------------------------------------------------------------------- */
+.av-tabbar {
+    display: none;
+}
+
+@media (max-width: 991.98px) {
+    .av-tabbar {
+        position: fixed;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        z-index: var(--av-z-bottomnav);
+        display: grid;
+        grid-auto-flow: column;
+        grid-auto-columns: 1fr;
+        height: calc(var(--av-bottomnav-h) + var(--av-safe-b));
+        padding-bottom: var(--av-safe-b);
+        background: var(--av-surface);
+        border-top: 1px solid var(--av-border);
+        box-shadow: 0 -2px 12px rgba(16, 24, 40, .06);
+    }
+
+    .av-tabbar__item {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        gap: 2px;
+        border: 0;
+        background: transparent;
+        color: var(--av-muted);
+        font-size: .625rem;
+        font-weight: 600;
+        letter-spacing: .01em;
+        cursor: pointer;
+        -webkit-tap-highlight-color: transparent;
+    }
+
+    .av-tabbar__item .av-icon { color: currentColor; }
+
+    .av-tabbar__item.is-active {
+        color: var(--av-primary);
+    }
+
+    .av-tabbar__item.is-active::before {
+        content: "";
+        position: absolute;
+        top: 0;
+        width: 28px;
+        height: 2px;
+        border-radius: 0 0 2px 2px;
+        background: var(--av-primary);
+    }
+
+    .av-tabbar__item { position: relative; }
+}
+
+/* -----------------------------------------------------------------------------
+   7. Page header
+   -------------------------------------------------------------------------- */
+.av-page-head {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: flex-start;
+    gap: 12px;
+    margin-bottom: 18px;
+}
+
+.av-page-head__text { flex: 1 1 260px; min-width: 0; }
+
+.av-page-head h1,
+.av-page-head .av-page-title {
+    margin: 0;
+    font-size: 1.25rem;
+    font-weight: 700;
+    letter-spacing: -.015em;
+}
+
+.av-page-head__sub {
+    margin: 4px 0 0;
+    color: var(--av-muted);
+    font-size: .8438rem;
+}
+
+.av-page-head__actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+}
+
+@media (max-width: 575.98px) {
+    /* One clear primary action per row beats three cramped ones. */
+    .av-page-head__actions {
+        width: 100%;
+    }
+
+    .av-page-head__actions > .btn {
+        flex: 1 1 140px;
+    }
+}
+
+.av-crumbs {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 6px;
+    margin: 0 0 12px;
+    padding: 0;
+    list-style: none;
+    font-size: .75rem;
+    color: var(--av-faint);
+}
+
+.av-crumbs a { color: var(--av-muted); }
+.av-crumbs a:hover { color: var(--av-primary); }
+.av-crumbs li + li::before { content: "/"; margin-right: 6px; color: var(--av-border-strong); }
+
+/* -----------------------------------------------------------------------------
+   8. Cards & surfaces
+   -------------------------------------------------------------------------- */
+.av-body .card,
+.av-card {
+    background: var(--av-surface);
+    border: 1px solid var(--av-border);
+    border-radius: var(--av-r);
+    box-shadow: var(--av-shadow-xs);
+    margin-bottom: var(--av-gutter);
+}
+
+.av-body .card-header,
+.av-card__head {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+    padding: 14px 16px;
+    background: transparent;
+    border-bottom: 1px solid var(--av-border);
+    border-radius: var(--av-r) var(--av-r) 0 0;
+    min-height: 0;
+}
+
+.av-body .card-title,
+.av-card__title {
+    margin: 0;
+    font-size: .9375rem;
+    font-weight: 650;
+    color: var(--av-text);
+}
+
+.av-body .card-body,
+.av-card__body {
+    padding: 16px;
+}
+
+.av-body .card-footer,
+.av-card__foot {
+    padding: 14px 16px;
+    background: var(--av-surface-2);
+    border-top: 1px solid var(--av-border);
+    border-radius: 0 0 var(--av-r) var(--av-r);
+}
+
+/* Header whose title was a duplicate of the page heading (see dedupeTitles).
+   !important because these headers carry Bootstrap's .justify-content-between
+   utility, and BS5 emits its utilities with !important. */
+.av-body .av-head-dedup { justify-content: flex-end !important; }
+
+/* A header left with nothing in it at all should not draw a line. */
+.av-body .av-head-dedup:empty,
+.av-body .card-header:empty { display: none; }
+
+@media (max-width: 575.98px) {
+    .av-body .card-header,
+    .av-card__head { padding: 13px 14px; }
+
+    .av-body .card-body,
+    .av-card__body { padding: 14px; }
+}
+
+/* Stat tiles ------------------------------------------------------------- */
+.av-stats {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 12px;
+    margin-bottom: var(--av-gutter);
+}
+
+@media (min-width: 768px) {
+    .av-stats { grid-template-columns: repeat(auto-fit, minmax(190px, 1fr)); gap: 16px; }
+}
+
+.av-stat {
+    background: var(--av-surface);
+    border: 1px solid var(--av-border);
+    border-radius: var(--av-r);
+    box-shadow: var(--av-shadow-xs);
+    padding: 14px;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    min-width: 0;
+    color: inherit;
+}
+
+a.av-stat:hover {
+    border-color: var(--av-border-strong);
+    box-shadow: var(--av-shadow-sm);
+    color: inherit;
+}
+
+.av-stat__top {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    min-width: 0;
+}
+
+.av-stat__icon {
+    flex: 0 0 auto;
+    width: 34px;
+    height: 34px;
+    display: grid;
+    place-items: center;
+    border-radius: var(--av-r-sm);
+    background: var(--av-surface-3);
+    color: var(--av-text-2);
+}
+
+.av-stat__icon--primary { background: var(--av-primary-soft); color: var(--av-primary); }
+.av-stat__icon--success { background: var(--av-success-soft); color: var(--av-success); }
+.av-stat__icon--warning { background: var(--av-warning-soft); color: var(--av-warning); }
+.av-stat__icon--danger  { background: var(--av-danger-soft);  color: var(--av-danger); }
+.av-stat__icon--info    { background: var(--av-info-soft);    color: var(--av-info); }
+
+/* Wraps to a second line rather than truncating — a clipped "AWAITING PA…"
+   in a two-up mobile grid is worse than a taller tile. */
+.av-stat__label {
+    min-width: 0;
+    font-size: .6875rem;
+    font-weight: 700;
+    line-height: 1.3;
+    letter-spacing: .04em;
+    text-transform: uppercase;
+    color: var(--av-muted);
+}
+
+.av-stat__value {
+    font-size: 1.5rem;
+    font-weight: 700;
+    line-height: 1.1;
+    letter-spacing: -.02em;
+    color: var(--av-text);
+    font-variant-numeric: tabular-nums;
+}
+
+.av-stat__note {
+    font-size: .75rem;
+    color: var(--av-faint);
+}
+
+@media (min-width: 768px) {
+    .av-stat { padding: 18px; }
+    .av-stat__value { font-size: 1.75rem; }
+}
+
+/* Bar chart — plain CSS. A 14-bar trend does not justify shipping a charting
+   library to a phone, and this one reflows at any width. */
+.av-bars {
+    display: flex;
+    align-items: flex-end;
+    gap: 4px;
+    height: 132px;
+}
+
+.av-bars__col {
+    flex: 1 1 0;
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 6px;
+    height: 100%;
+}
+
+.av-bars__track {
+    flex: 1 1 auto;
+    width: 100%;
+    display: flex;
+    align-items: flex-end;
+    background: var(--av-surface-3);
+    border-radius: var(--av-r-xs);
+    overflow: hidden;
+}
+
+.av-bars__fill {
+    width: 100%;
+    min-height: 2px;
+    background: var(--av-primary-solid);
+    border-radius: var(--av-r-xs);
+}
+
+.av-bars__tick {
+    flex: 0 0 auto;
+    font-size: .625rem;
+    color: var(--av-faint);
+    line-height: 1;
+    white-space: nowrap;
+}
+
+/* Simple list rows — the mobile-friendly alternative to a 6-column table. */
+.av-list { display: flex; flex-direction: column; }
+
+.av-list__row {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 12px 16px;
+    border-bottom: 1px solid var(--av-border);
+    color: inherit;
+    min-width: 0;
+}
+
+.av-list__row:last-child { border-bottom: 0; }
+a.av-list__row:hover { background: var(--av-surface-2); color: inherit; }
+
+/* These are <span>s. text-overflow/ellipsis is ignored on inline boxes, so
+   without an explicit block display the truncation silently does nothing and a
+   long review comment drags the whole page wider than the screen. */
+.av-list__main {
+    display: block;
+    flex: 1 1 auto;
+    min-width: 0;
+}
+
+.av-list__title {
+    display: block;
+    font-weight: 600;
+    font-size: .875rem;
+    color: var(--av-text);
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.av-list__sub {
+    display: block;
+    font-size: .75rem;
+    color: var(--av-muted);
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.av-list__meta {
+    flex: 0 0 auto;
+    text-align: right;
+    font-size: .8125rem;
+    font-weight: 600;
+    color: var(--av-text);
+    font-variant-numeric: tabular-nums;
+}
+
+/* -----------------------------------------------------------------------------
+   9. Buttons
+   -------------------------------------------------------------------------- */
+.av-body .btn {
+    --bs-btn-border-radius: var(--av-r-sm);
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 7px;
+    /* 40px minimum keeps buttons tappable without looking oversized. */
+    min-height: 40px;
+    padding: 8px 16px;
+    border: 1px solid transparent;
+    border-radius: var(--av-r-sm);
+    font-size: .875rem;
+    font-weight: 600;
+    line-height: 1.4;
+    box-shadow: none;
+    transition: background .15s ease, border-color .15s ease, color .15s ease;
+    -webkit-tap-highlight-color: transparent;
+}
+
+.av-body .btn:focus { box-shadow: none; }
+.av-body .btn:focus-visible { box-shadow: var(--av-ring); }
+
+.av-body .btn-sm {
+    min-height: 32px;
+    padding: 5px 11px;
+    font-size: .8125rem;
+    border-radius: var(--av-r-xs);
+}
+
+.av-body .btn-lg {
+    min-height: 48px;
+    padding: 12px 22px;
+    font-size: .9375rem;
+}
+
+.av-body .btn-primary,
+.av-body .btn-danger,
+.av-body .btn-success,
+.av-body .btn-warning,
+.av-body .btn-info,
+.av-body .btn-secondary,
+.av-body .btn-dark {
+    color: #fff;
+}
+
+.av-body .btn-primary {
+    background: var(--av-primary-solid);
+    border-color: var(--av-primary-solid);
+    color: var(--av-primary-solid-fg);
+}
+
+.av-body .btn-primary:hover,
+.av-body .btn-primary:active {
+    background: var(--av-primary-solid-hover);
+    border-color: var(--av-primary-solid-hover);
+    color: var(--av-primary-solid-fg);
+}
+
+.av-body .btn-secondary {
+    background: var(--av-surface);
+    border-color: var(--av-border-strong);
+    color: var(--av-text-2);
+}
+
+.av-body .btn-secondary:hover {
+    background: var(--av-surface-3);
+    border-color: var(--av-border-strong);
+    color: var(--av-text);
+}
+
+.av-body .btn-success { background: var(--av-success); border-color: var(--av-success); }
+.av-body .btn-danger  { background: var(--av-danger);  border-color: var(--av-danger); }
+.av-body .btn-warning { background: var(--av-warning); border-color: var(--av-warning); }
+.av-body .btn-info    { background: var(--av-info);    border-color: var(--av-info); }
+.av-body .btn-dark    { background: #1f2937;           border-color: #1f2937; }
+
+.av-body .btn-success:hover { filter: brightness(.93); color: #fff; }
+.av-body .btn-danger:hover  { filter: brightness(.93); color: #fff; }
+.av-body .btn-warning:hover { filter: brightness(.93); color: #fff; }
+.av-body .btn-info:hover    { filter: brightness(.93); color: #fff; }
+.av-body .btn-dark:hover    { filter: brightness(1.15); color: #fff; }
+
+.av-body .btn-light {
+    background: var(--av-surface-3);
+    border-color: var(--av-border);
+    color: var(--av-text-2);
+}
+
+.av-body .btn-light:hover { background: var(--av-border); color: var(--av-text); }
+
+.av-body .btn-outline-primary {
+    background: transparent;
+    border-color: var(--av-primary);
+    color: var(--av-primary);
+}
+
+.av-body .btn-outline-primary:hover {
+    background: var(--av-primary-solid);
+    color: var(--av-primary-solid-fg);
+}
+
+.av-body .btn-outline-secondary {
+    background: transparent;
+    border-color: var(--av-border-strong);
+    color: var(--av-text-2);
+}
+
+.av-body .btn-outline-secondary:hover {
+    background: var(--av-surface-3);
+    color: var(--av-text);
+    border-color: var(--av-border-strong);
+}
+
+.av-body .btn-outline-danger {
+    background: transparent;
+    border-color: var(--av-danger);
+    color: var(--av-danger);
+}
+
+.av-body .btn-outline-danger:hover { background: var(--av-danger); color: #fff; }
+
+.av-body .btn-link {
+    background: none;
+    border: 0;
+    color: var(--av-primary);
+    padding: 8px 4px;
+}
+
+.av-body .btn:disabled,
+.av-body .btn.disabled {
+    opacity: .55;
+    cursor: not-allowed;
+}
+
+/* Square icon-only button — used heavily inside table action columns. */
+.av-body .btn-icon {
+    width: 34px;
+    min-width: 34px;
+    height: 34px;
+    min-height: 34px;
+    padding: 0;
+}
+
+.av-body .btn-sm.btn-icon {
+    width: 32px;
+    min-width: 32px;
+    height: 32px;
+    min-height: 32px;
+}
+
+/* Row actions inside a table.
+   Legacy pages reach for btn-warning to mean "edit" and btn-info to mean
+   "duplicate", which paints every list orange and blue and drowns out the one
+   button that genuinely needs attention — delete. Inside a table those become
+   quiet outline buttons; danger keeps its colour. */
+.av-body td .btn-warning,
+.av-body td .btn-info,
+.av-body td .btn-success,
+.av-body td .btn-primary,
+.av-body td .btn-secondary,
+.av-body td .btn-dark {
+    background: var(--av-surface);
+    border-color: var(--av-border-strong);
+    color: var(--av-text-2);
+}
+
+.av-body td .btn-warning:hover,
+.av-body td .btn-info:hover,
+.av-body td .btn-success:hover,
+.av-body td .btn-primary:hover,
+.av-body td .btn-secondary:hover,
+.av-body td .btn-dark:hover {
+    background: var(--av-surface-3);
+    border-color: var(--av-border-strong);
+    color: var(--av-text);
+    filter: none;
+}
+
+/* Keep a hint of intent on the icon itself. */
+.av-body td .btn-warning i { color: var(--av-warning); }
+.av-body td .btn-info i { color: var(--av-info); }
+.av-body td .btn-success i { color: var(--av-success); }
+.av-body td .btn-primary i { color: var(--av-primary); }
+
+.av-body td .btn-danger {
+    background: var(--av-surface);
+    border-color: var(--av-danger);
+    color: var(--av-danger);
+}
+
+.av-body td .btn-danger:hover {
+    background: var(--av-danger);
+    border-color: var(--av-danger);
+    color: #fff;
+    filter: none;
+}
+
+.av-body td .btn-danger i { color: inherit; }
+
+/* Group of row actions — wraps instead of overflowing on narrow screens. */
+.av-actions {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 6px;
+}
+
+.av-actions form { margin: 0; }
+
+/* Icon-only buttons are fine in a dense desktop table, but once rows become
+   cards there is room for a word — and a word is far easier to hit correctly
+   than a 32px glyph. Matches the table card-mode breakpoint. */
+.av-btn-label { display: none; }
+
+@media (max-width: 767.98px) {
+    .av-btn-label { display: inline; }
+
+    /* A labelled row action must be allowed to wrap rather than push the card
+       wider than the screen. */
+    .av-body td .btn {
+        white-space: normal;
+        max-width: 100%;
+        overflow-wrap: anywhere;
+    }
+}
+
+/* Sticky save bar for long forms on mobile. */
+.av-savebar {
+    position: sticky;
+    bottom: calc(var(--av-bottomnav-h) + var(--av-safe-b));
+    z-index: var(--av-z-savebar);
+    display: flex;
+    gap: 8px;
+    margin: 18px calc(var(--av-gutter) * -1) calc(var(--av-gutter) * -1);
+    padding: 12px var(--av-gutter);
+    background: var(--av-surface);
+    border-top: 1px solid var(--av-border);
+    box-shadow: 0 -4px 16px rgba(16, 24, 40, .06);
+}
+
+.av-savebar > .btn { flex: 1 1 auto; }
+.av-savebar > .btn.av-savebar__cancel { flex: 0 1 40%; }
+
+@media (min-width: 992px) {
+    .av-savebar {
+        position: static;
+        margin: 18px 0 0;
+        padding: 16px 0 0;
+        background: transparent;
+        border-top: 1px solid var(--av-border);
+        box-shadow: none;
+    }
+
+    .av-savebar > .btn { flex: 0 0 auto; }
+    .av-savebar > .btn.av-savebar__cancel { flex: 0 0 auto; }
+}
+
+#av-top {
+    position: fixed;
+    right: 14px;
+    bottom: calc(var(--av-bottomnav-h) + var(--av-safe-b) + 14px);
+    z-index: var(--av-z-savebar);
+    width: 40px;
+    height: 40px;
+    display: none;
+    place-items: center;
+    border: 1px solid var(--av-border);
+    border-radius: 50%;
+    background: var(--av-surface);
+    color: var(--av-text-2);
+    box-shadow: var(--av-shadow-md);
+}
+
+#av-top.is-shown { display: grid; }
+
+@media (min-width: 992px) {
+    #av-top { bottom: 24px; right: 24px; }
+}
+
+/* -----------------------------------------------------------------------------
+   10. Forms
+   -------------------------------------------------------------------------- */
+.av-body .form-label,
+.av-body label:not(.form-check-label):not(.av-switch) {
+    display: block;
+    margin-bottom: 6px;
+    font-size: .8125rem;
+    font-weight: 600;
+    color: var(--av-text-2);
+}
+
+.av-body .form-control,
+.av-body .form-select,
+.av-body textarea,
+.av-body input[type="text"],
+.av-body input[type="email"],
+.av-body input[type="password"],
+.av-body input[type="number"],
+.av-body input[type="search"],
+.av-body input[type="tel"],
+.av-body input[type="url"],
+.av-body input[type="date"],
+.av-body input[type="time"],
+.av-body input[type="datetime-local"] {
+    width: 100%;
+    min-height: 44px;
+    padding: 10px 12px;
+    /* 16px stops iOS Safari zooming the viewport when a field is focused. */
+    font-size: 16px;
+    line-height: 1.4;
+    color: var(--av-text);
+    background-color: var(--av-surface);
+    border: 1px solid var(--av-border-strong);
+    border-radius: var(--av-r-sm);
+    box-shadow: none;
+    transition: border-color .15s ease, box-shadow .15s ease;
+    appearance: none;
+    -webkit-appearance: none;
+}
+
+@media (min-width: 992px) {
+    .av-body .form-control,
+    .av-body .form-select,
+    .av-body textarea,
+    .av-body input[type="text"],
+    .av-body input[type="email"],
+    .av-body input[type="password"],
+    .av-body input[type="number"],
+    .av-body input[type="search"],
+    .av-body input[type="tel"],
+    .av-body input[type="url"],
+    .av-body input[type="date"],
+    .av-body input[type="time"],
+    .av-body input[type="datetime-local"] {
+        min-height: 40px;
+        padding: 8px 12px;
+        font-size: .875rem;
+    }
+}
+
+/* Most of this admin writes <select class="form-control">. Bootstrap 5 only
+   draws the dropdown chevron for .form-select, so those 60-odd selects render
+   as plain boxes with no affordance that they open a list. Targeting the
+   element as well as the class covers both spellings. */
+.av-body .form-select,
+.av-body select.form-control,
+.av-body select {
+    padding-right: 36px;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23667085' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 10px center;
+    background-size: 16px;
+    appearance: none;
+    -webkit-appearance: none;
+}
+
+[data-theme="dark"] .av-body .form-select,
+[data-theme="dark"] .av-body select.form-control,
+[data-theme="dark"] .av-body select {
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%2398a0ae' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E");
+}
+
+/* Select2 draws its own arrow; ours would double up. */
+.av-body .select2-container select,
+.av-body select.select2-hidden-accessible {
+    background-image: none;
+}
+
+.av-body .form-control::placeholder { color: var(--av-faint); }
+
+.av-body .form-control:focus,
+.av-body .form-select:focus,
+.av-body textarea:focus {
+    border-color: var(--av-primary);
+    box-shadow: var(--av-ring);
+    outline: none;
+}
+
+.av-body .form-control:disabled,
+.av-body .form-control[readonly] {
+    background: var(--av-surface-3);
+    color: var(--av-muted);
+}
+
+.av-body textarea.form-control { min-height: 96px; resize: vertical; }
+
+.av-body .form-text,
+.av-body .av-help {
+    display: block;
+    margin-top: 5px;
+    font-size: .75rem;
+    color: var(--av-muted);
+}
+
+.av-body .is-invalid,
+.av-body .form-control.is-invalid {
+    border-color: var(--av-danger);
+}
+
+.av-body .invalid-feedback,
+.av-body .text-danger {
+    color: var(--av-danger) !important;
+    font-size: .75rem;
+}
+
+/* Input groups -----------------------------------------------------------
+   Bootstrap sizes a grouped field with `width: 1%; flex: 1 1 auto` so it shares
+   the row with its addon. The blanket `width: 100%` above ties that rule's
+   specificity and, loading later, wins — the field then demands the full row
+   and the addon wraps onto its own line above it. Restoring the intended
+   behaviour needs `.input-group >` to push specificity past the generic rule. */
+.av-body .input-group {
+    flex-wrap: nowrap;
+}
+
+.av-body .input-group > .form-control,
+.av-body .input-group > .form-select,
+.av-body .input-group > input,
+.av-body .input-group > select,
+.av-body .input-group > textarea {
+    flex: 1 1 auto;
+    width: 1%;
+    min-width: 0;
+}
+
+.av-body .input-group-text {
+    display: flex;
+    align-items: center;
+    min-height: 44px;
+    padding: 8px 12px;
+    background: var(--av-surface-3);
+    border: 1px solid var(--av-border-strong);
+    border-radius: var(--av-r-sm);
+    color: var(--av-muted);
+    font-size: .875rem;
+    white-space: nowrap;
+}
+
+/* Square off the join so the addon and the field read as one control. */
+.av-body .input-group > :not(:last-child) {
+    border-top-right-radius: 0;
+    border-bottom-right-radius: 0;
+}
+
+.av-body .input-group > :not(:first-child) {
+    margin-left: -1px;
+    border-top-left-radius: 0;
+    border-bottom-left-radius: 0;
+}
+
+@media (min-width: 992px) {
+    .av-body .input-group-text { min-height: 40px; }
+}
+
+.av-body .form-check { min-height: 24px; padding-left: 1.85em; }
+
+/* Generic checkbox/radio. The switch variant below is more specific and wins. */
+.av-body .form-check-input {
+    width: 1.15em;
+    height: 1.15em;
+    margin-left: -1.85em;
+    margin-top: .2em;
+    border-color: var(--av-border-strong);
+    background-color: var(--av-surface);
+    cursor: pointer;
+}
+
+.av-body .form-check-input:checked {
+    background-color: var(--av-primary-solid);
+    border-color: var(--av-primary-solid);
+}
+
+/* Bootstrap's switch is a pill-shaped checkbox with a background-image knob.
+   The generic checkbox sizing above would square it off, so it is restated. */
+.av-body .form-switch { padding-left: 2.75em; }
+
+.av-body .form-switch .form-check-input {
+    width: 2.25em;
+    height: 1.25em;
+    margin-left: -2.75em;
+    margin-top: .15em;
+    border-radius: var(--av-r-pill);
+    background-position: left center;
+    background-color: var(--av-border-strong);
+    border-color: var(--av-border-strong);
+    cursor: pointer;
+}
+
+.av-body .form-switch .form-check-input:checked {
+    background-position: right center;
+    background-color: var(--av-success);
+    border-color: var(--av-success);
+}
+
+@media (pointer: coarse) {
+    .av-body .form-switch .form-check-input {
+        width: 2.6em;
+        height: 1.45em;
+    }
+}
+
+.av-body .form-check-input:focus { box-shadow: var(--av-ring); }
+.av-body .form-check-label { font-size: .875rem; color: var(--av-text-2); cursor: pointer; }
+
+/* Toggle switch — table status columns build this markup from JS, so the
+   class names have to keep matching the existing `.switch > input + .slider`. */
+.av-body .switch,
+.av-body .av-switch {
+    position: relative;
+    display: inline-block;
+    width: 44px;
+    height: 24px;
+    margin: 0;
+    flex: 0 0 auto;
+}
+
+.av-body .switch input,
+.av-body .av-switch input {
+    opacity: 0;
+    width: 0;
+    height: 0;
+    position: absolute;
+}
+
+.av-body .switch .slider,
+.av-body .av-switch .slider {
+    position: absolute;
+    inset: 0;
+    cursor: pointer;
+    background: var(--av-border-strong);
+    border-radius: var(--av-r-pill);
+    transition: background .2s ease;
+}
+
+.av-body .switch .slider::before,
+.av-body .av-switch .slider::before {
+    content: "";
+    position: absolute;
+    top: 3px;
+    left: 3px;
+    width: 18px;
+    height: 18px;
+    background: #fff;
+    border-radius: 50%;
+    box-shadow: 0 1px 2px rgba(16, 24, 40, .2);
+    transition: transform .2s ease;
+}
+
+.av-body .switch input:checked + .slider,
+.av-body .av-switch input:checked + .slider { background: var(--av-success); }
+
+.av-body .switch input:checked + .slider::before,
+.av-body .av-switch input:checked + .slider::before { transform: translateX(20px); }
+
+.av-body .switch input:disabled + .slider,
+.av-body .av-switch input:disabled + .slider { opacity: .5; cursor: wait; }
+
+/* Field grid — replaces ad-hoc .row/.col markup in forms. */
+.av-fields {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 16px;
+}
+
+@media (min-width: 768px) {
+    .av-fields--2 { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+    .av-fields--3 { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+}
+
+.av-field--full { grid-column: 1 / -1; }
+
+/* Third-party widgets ---------------------------------------------------- */
+.av-body .select2-container--default .select2-selection--single,
+.av-body .select2-container--default .select2-selection--multiple {
+    min-height: 44px;
+    padding: 5px 8px;
+    border: 1px solid var(--av-border-strong) !important;
+    border-radius: var(--av-r-sm) !important;
+    background: var(--av-surface) !important;
+}
+
+.av-body .select2-container--default .select2-selection--single .select2-selection__rendered {
+    line-height: 32px;
+    color: var(--av-text);
+    padding-left: 4px;
+}
+
+.av-body .select2-container--default .select2-selection--single .select2-selection__arrow {
+    height: 42px;
+}
+
+.av-body .select2-dropdown {
+    border: 1px solid var(--av-border) !important;
+    border-radius: var(--av-r-sm);
+    background: var(--av-surface);
+    box-shadow: var(--av-shadow-md);
+}
+
+.av-body .select2-container--default .select2-results__option--highlighted[aria-selected] {
+    background: var(--av-primary);
+}
+
+.av-body .note-editor.note-frame {
+    border: 1px solid var(--av-border-strong);
+    border-radius: var(--av-r-sm);
+    overflow: hidden;
+}
+
+.av-body .note-toolbar {
+    background: var(--av-surface-2);
+    border-bottom: 1px solid var(--av-border);
+}
+
+.av-body .note-editable {
+    background: var(--av-surface);
+    color: var(--av-text);
+}
+
+.av-body .dropify-wrapper {
+    border: 1px dashed var(--av-border-strong);
+    border-radius: var(--av-r-sm);
+    background: var(--av-surface-2);
+    color: var(--av-muted);
+}
+
+.av-body .dropify-wrapper:hover { border-color: var(--av-primary); }
+
+/* -----------------------------------------------------------------------------
+   11. Tables & DataTables
+   -------------------------------------------------------------------------- */
+.av-body .table {
+    --bs-table-bg: transparent;
+    width: 100%;
+    margin: 0;
+    color: var(--av-text);
+    font-size: .875rem;
+    border-color: var(--av-border);
+}
+
+/* Bootstrap draws a 2px currentColor rule between table sections, which lands
+   as a hard black bar under the header — and again above tbody once rows are
+   stacked into cards. The header already has its own 1px border. */
+.av-body .table > :not(:first-child) {
+    border-top: 0;
+}
+
+.av-body .table > :not(caption) > * > * {
+    padding: 12px 14px;
+    background: transparent;
+    border-bottom-color: var(--av-border);
+    box-shadow: none;
+    vertical-align: middle;
+}
+
+.av-body .table thead th {
+    background: var(--av-surface-2);
+    color: var(--av-muted);
+    font-size: .6875rem;
+    font-weight: 700;
+    letter-spacing: .05em;
+    text-transform: uppercase;
+    white-space: nowrap;
+    border-bottom: 1px solid var(--av-border);
+}
+
+.av-body .table tbody tr:hover > * { background: var(--av-surface-2); }
+.av-body .table-bordered > :not(caption) > * > * { border: 1px solid var(--av-border); }
+.av-body .table img { border-radius: var(--av-r-xs); }
+
+.av-body .table .img-thumbnail {
+    padding: 0;
+    border: 1px solid var(--av-border);
+    border-radius: var(--av-r-xs);
+    background: var(--av-surface);
+    object-fit: cover;
+}
+
+.av-body .table-responsive {
+    border-radius: var(--av-r);
+    -webkit-overflow-scrolling: touch;
+}
+
+/* DataTables chrome ------------------------------------------------------ */
+.av-body .dataTables_wrapper { color: var(--av-text-2); }
+
+.av-body .dataTables_wrapper .dataTables_length,
+.av-body .dataTables_wrapper .dataTables_filter {
+    margin-bottom: 12px;
+    font-size: .8125rem;
+}
+
+.av-body .dataTables_wrapper .dataTables_filter { text-align: left; }
+
+.av-body .dataTables_wrapper .dataTables_filter label {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin: 0;
+    font-weight: 500;
+    color: var(--av-muted);
+}
+
+.av-body .dataTables_wrapper .dataTables_filter input {
+    width: 100%;
+    max-width: 280px;
+    min-height: 40px;
+    margin: 0;
+    padding: 8px 12px;
+    font-size: 16px;
+    color: var(--av-text);
+    background: var(--av-surface);
+    border: 1px solid var(--av-border-strong);
+    border-radius: var(--av-r-sm);
+}
+
+.av-body .dataTables_wrapper .dataTables_length label {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin: 0;
+    font-weight: 500;
+    color: var(--av-muted);
+}
+
+.av-body .dataTables_wrapper .dataTables_length select {
+    min-height: 40px;
+    /* Room on the right for the shared chevron; `background` shorthand would
+       wipe out the arrow image, so only the colour is set here. */
+    padding: 6px 32px 6px 10px;
+    color: var(--av-text);
+    background-color: var(--av-surface);
+    border: 1px solid var(--av-border-strong);
+    border-radius: var(--av-r-sm);
+}
+
+.av-body .dataTables_wrapper .dataTables_info {
+    padding-top: 12px;
+    font-size: .8125rem;
+    color: var(--av-muted);
+}
+
+.av-body .dataTables_wrapper .dataTables_paginate {
+    padding-top: 10px;
+}
+
+.av-body .dataTables_wrapper .pagination { gap: 4px; flex-wrap: wrap; }
+
+.av-body .page-link {
+    min-width: 38px;
+    min-height: 38px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 6px 10px;
+    border: 1px solid var(--av-border);
+    border-radius: var(--av-r-xs);
+    background: var(--av-surface);
+    color: var(--av-text-2);
+    font-size: .8125rem;
+    font-weight: 500;
+}
+
+.av-body .page-link:hover {
+    background: var(--av-surface-3);
+    border-color: var(--av-border-strong);
+    color: var(--av-text);
+}
+
+.av-body .page-item.active .page-link {
+    background: var(--av-primary-solid);
+    border-color: var(--av-primary-solid);
+    color: var(--av-primary-solid-fg);
+}
+
+.av-body .page-item.disabled .page-link {
+    background: var(--av-surface-2);
+    color: var(--av-faint);
+    opacity: .7;
+}
+
+.av-body table.dataTable thead .sorting,
+.av-body table.dataTable thead .sorting_asc,
+.av-body table.dataTable thead .sorting_desc {
+    cursor: pointer;
+}
+
+.av-body .dataTables_processing {
+    border: 1px solid var(--av-border) !important;
+    border-radius: var(--av-r-sm);
+    background: var(--av-surface) !important;
+    color: var(--av-text) !important;
+    box-shadow: var(--av-shadow-md);
+}
+
+/* Mobile: rows become stacked cards ------------------------------------- */
+@media (max-width: 767.98px) {
+    .av-body .dataTables_wrapper .dataTables_length { display: none; }
+    .av-body .dataTables_wrapper .dataTables_filter input { max-width: none; }
+
+    .av-body .dataTables_wrapper .dataTables_filter label {
+        flex-direction: column;
+        align-items: stretch;
+        gap: 4px;
+    }
+
+    .av-body .dataTables_wrapper .dataTables_paginate .paginate_button.previous,
+    .av-body .dataTables_wrapper .dataTables_paginate .paginate_button.next { font-weight: 600; }
+
+    /* `av-cards` is applied by admin-v2.js to any table with a header row and
+       three or more columns. Opt a table out with data-no-cards. */
+    .av-body table.av-cards,
+    .av-body table.av-cards tbody,
+    .av-body table.av-cards tr,
+    .av-body table.av-cards td {
+        display: block;
+        width: 100% !important;
+        /* DataTables ships `table.dataTable th, td { box-sizing: content-box }`
+           for its column-width maths. Combined with width:100% that adds the
+           cell's 28px of padding on top of a full-width row, pushing the card
+           past the screen edge. */
+        box-sizing: border-box;
+    }
+
+    .av-body table.av-cards { border: 0; }
+    .av-body table.av-cards thead { display: none; }
+
+    /* The scroll wrappers must stop clipping once rows are stacked. */
+    .av-body .av-cards-host {
+        overflow: visible !important;
+        width: auto !important;
+    }
+
+    /* The row is a flex column so cells can be re-ordered into a card shape
+       (title + chip, then details, then actions) without moving any DOM —
+       DataTables owns these nodes and rebuilds them on every draw. */
+    .av-body table.av-cards tbody tr {
+        display: flex !important;
+        flex-wrap: wrap;
+        align-items: center;
+        margin-bottom: 10px;
+        border: 1px solid var(--av-border);
+        border-radius: var(--av-r);
+        background: var(--av-surface);
+        box-shadow: var(--av-shadow-xs);
+        overflow: hidden;
+    }
+
+    .av-body table.av-cards tbody tr:hover > * { background: transparent; }
+
+    .av-body table.av-cards tbody td {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 14px;
+        flex: 1 1 100%;
+        order: 5;
+        padding: 9px 14px !important;
+        border: 0 !important;
+        border-bottom: 1px solid var(--av-surface-3) !important;
+        text-align: right;
+        min-height: 42px;
+    }
+
+    .av-body table.av-cards tbody td:last-child { border-bottom: 0 !important; }
+
+    /* Card header: the identifying value and its status chip, side by side. */
+    .av-body table.av-cards tbody td.av-cell-title {
+        order: 1;
+        flex: 1 1 auto;
+        width: auto !important;
+        justify-content: flex-start;
+        padding-right: 6px !important;
+        font-size: .9375rem;
+        font-weight: 650;
+        color: var(--av-text);
+        text-align: left;
+        border-bottom-color: var(--av-border) !important;
+    }
+
+    .av-body table.av-cards tbody td.av-cell-pill {
+        order: 2;
+        flex: 0 0 auto;
+        width: auto !important;
+        justify-content: flex-end;
+        padding-left: 6px !important;
+        border-bottom-color: var(--av-border) !important;
+    }
+
+    .av-body table.av-cards tbody td.av-cell-title::before,
+    .av-body table.av-cards tbody td.av-cell-pill::before { content: none; }
+
+    /* Bulk-select checkbox leads the card. */
+    .av-body table.av-cards tbody td.av-cell-check {
+        order: 0;
+        flex: 0 0 auto;
+        width: auto !important;
+        min-height: 0;
+        padding: 9px 4px 9px 14px !important;
+        border-bottom-color: var(--av-border) !important;
+    }
+
+    .av-body table.av-cards tbody td.av-cell-check::before { content: none; }
+
+    .av-body table.av-cards tbody td.av-cell-check input[type="checkbox"] {
+        width: 20px;
+        height: 20px;
+    }
+
+    /* Row numbers mean nothing once the row is a card. */
+    .av-body table.av-cards tbody td.av-cell-index { display: none !important; }
+
+    .av-body table.av-cards tbody td.av-cell-wide { order: 8; }
+
+    .av-body table.av-cards tbody td::before {
+        content: attr(data-label);
+        flex: 0 0 auto;
+        max-width: 45%;
+        color: var(--av-muted);
+        font-size: .6875rem;
+        font-weight: 700;
+        letter-spacing: .05em;
+        text-transform: uppercase;
+        text-align: left;
+    }
+
+    /* Cells JS marked as action/media get the full card width. */
+    .av-body table.av-cards tbody td.av-cell-wide {
+        flex-direction: row;
+        flex-wrap: wrap;
+        align-items: center;
+        text-align: left;
+        gap: 6px;
+    }
+
+    .av-body table.av-cards tbody td.av-cell-wide::before { 
+        max-width: none;
+        width: 100%;
+        margin-bottom: 2px;
+    }
+
+    .av-body table.av-cards tbody td.av-cell-wide > div,
+    .av-body table.av-cards tbody td.av-cell-wide .av-actions {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 6px;
+        justify-content: flex-start;
+    }
+
+    /* Thumbnails stay on the right of their label rather than becoming a row. */
+    .av-body table.av-cards tbody td img {
+        max-width: 52px;
+        max-height: 52px;
+    }
+
+    /* Long unbroken values — email addresses, URLs, transaction ids — have no
+       break opportunity and would otherwise set the card's minimum width and
+       push the whole page sideways. */
+    .av-body table.av-cards tbody td {
+        overflow-wrap: anywhere;
+    }
+
+    /* A flex item defaults to min-width:auto, which refuses to shrink below its
+       content. Pages pair an avatar with a name/email block inside a .d-flex;
+       without this the block cannot narrow and the row overflows. */
+    .av-body table.av-cards tbody td .d-flex {
+        flex-wrap: wrap;
+        min-width: 0;
+    }
+
+    .av-body table.av-cards tbody td .d-flex > * {
+        min-width: 0;
+    }
+
+    /* Once rows are cards, the surrounding card is a second border around a
+       stack of bordered boxes. Flatten it and give the cards the full width. */
+    .av-body .card:has(table.av-cards),
+    .av-body .av-card:has(table.av-cards) {
+        border-color: transparent;
+        background: transparent;
+        box-shadow: none;
+        margin-bottom: 8px;
+    }
+
+    .av-body .card:has(table.av-cards) > .card-body,
+    .av-body .av-card:has(table.av-cards) > .av-card__body {
+        padding: 0;
+    }
+
+    /* …but the DataTables controls still need to sit off the screen edge. */
+    .av-body .card:has(table.av-cards) .dataTables_filter,
+    .av-body .card:has(table.av-cards) .dataTables_info,
+    .av-body .card:has(table.av-cards) .dataTables_paginate,
+    .av-body .av-card:has(table.av-cards) .dataTables_filter,
+    .av-body .av-card:has(table.av-cards) .dataTables_info,
+    .av-body .av-card:has(table.av-cards) .dataTables_paginate {
+        padding-inline: 2px;
+    }
+
+    /* An emptied table still needs to say so. */
+    .av-body table.av-cards tbody td.dataTables_empty {
+        justify-content: center;
+        padding: 28px 14px !important;
+        color: var(--av-muted);
+        text-align: center;
+    }
+
+    .av-body table.av-cards tbody td.dataTables_empty::before { content: none; }
+}
+
+/* -----------------------------------------------------------------------------
+   12. Badges, pills, status
+   -------------------------------------------------------------------------- */
+.av-body .badge,
+.av-pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    padding: 3px 9px;
+    border-radius: var(--av-r-pill);
+    font-size: .6875rem;
+    font-weight: 650;
+    letter-spacing: .01em;
+    line-height: 1.5;
+    white-space: nowrap;
+}
+
+.av-pill--neutral { background: var(--av-surface-3); color: var(--av-text-2); }
+.av-pill--success { background: var(--av-success-soft); color: var(--av-success); }
+.av-pill--warning { background: var(--av-warning-soft); color: var(--av-warning); }
+.av-pill--danger  { background: var(--av-danger-soft);  color: var(--av-danger); }
+.av-pill--info    { background: var(--av-info-soft);    color: var(--av-info); }
+.av-pill--primary { background: var(--av-primary-soft); color: var(--av-primary); }
+
+.av-body .badge.bg-success { background: var(--av-success-soft) !important; color: var(--av-success) !important; }
+.av-body .badge.bg-warning { background: var(--av-warning-soft) !important; color: var(--av-warning) !important; }
+.av-body .badge.bg-danger  { background: var(--av-danger-soft)  !important; color: var(--av-danger)  !important; }
+.av-body .badge.bg-info    { background: var(--av-info-soft)    !important; color: var(--av-info)    !important; }
+.av-body .badge.bg-primary { background: var(--av-primary-soft) !important; color: var(--av-primary) !important; }
+.av-body .badge.bg-secondary { background: var(--av-surface-3) !important; color: var(--av-text-2) !important; }
+
+/* `badge-soft-*` came from the old theme stylesheet. The Order Centre and the
+   legacy order list build these in JS, so the names have to keep working. */
+.av-body .badge-soft-primary   { background: var(--av-primary-soft); color: var(--av-primary); }
+.av-body .badge-soft-success   { background: var(--av-success-soft); color: var(--av-success); }
+.av-body .badge-soft-warning   { background: var(--av-warning-soft); color: var(--av-warning); }
+.av-body .badge-soft-danger    { background: var(--av-danger-soft);  color: var(--av-danger); }
+.av-body .badge-soft-info      { background: var(--av-info-soft);    color: var(--av-info); }
+.av-body .badge-soft-secondary { background: var(--av-surface-3);    color: var(--av-text-2); }
+.av-body .badge-soft-dark      { background: var(--av-surface-3);    color: var(--av-text); }
+
+.av-dot {
+    width: 7px;
+    height: 7px;
+    border-radius: 50%;
+    background: currentColor;
+    flex: 0 0 auto;
+}
+
+.av-body .tag {
+    display: inline-flex;
+    align-items: center;
+    padding: 3px 9px;
+    border-radius: var(--av-r-pill);
+    background: var(--av-surface-3);
+    color: var(--av-text-2);
+    font-size: .75rem;
+}
+
+.av-body .avatar {
+    display: inline-block;
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    background: var(--av-surface-3);
+    object-fit: cover;
+}
+
+/* -----------------------------------------------------------------------------
+   13. Overlays: modals, toasts, alerts, empty states
+   -------------------------------------------------------------------------- */
+.av-body .modal-content {
+    border: 1px solid var(--av-border);
+    border-radius: var(--av-r-lg);
+    background: var(--av-surface);
+    box-shadow: var(--av-shadow-lg);
+}
+
+.av-body .modal-header,
+.av-body .modal-footer {
+    padding: 16px;
+    border-color: var(--av-border);
+}
+
+.av-body .modal-body { padding: 16px; }
+.av-body .modal-title { font-size: 1rem; font-weight: 650; }
+
+/* Below sm a centred dialog wastes space — dock it to the bottom instead. */
+@media (max-width: 575.98px) {
+    .av-body .modal-dialog {
+        margin: 0;
+        position: absolute;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        max-width: none;
+    }
+
+    .av-body .modal-content {
+        border-radius: var(--av-r-lg) var(--av-r-lg) 0 0;
+        border-bottom: 0;
+        max-height: 92dvh;
+    }
+
+    .av-body .modal-body {
+        overflow-y: auto;
+        padding-bottom: calc(16px + var(--av-safe-b));
+    }
+
+    .av-body .modal-footer {
+        padding-bottom: calc(16px + var(--av-safe-b));
+    }
+
+    .av-body .modal-footer > .btn { flex: 1 1 auto; }
+}
+
+.av-body .alert {
+    border: 1px solid transparent;
+    border-radius: var(--av-r);
+    padding: 12px 14px;
+    font-size: .875rem;
+}
+
+.av-body .alert-success { background: var(--av-success-soft); border-color: var(--av-success); color: var(--av-success); }
+.av-body .alert-danger  { background: var(--av-danger-soft);  border-color: var(--av-danger);  color: var(--av-danger); }
+.av-body .alert-warning { background: var(--av-warning-soft); border-color: var(--av-warning); color: var(--av-warning); }
+.av-body .alert-info    { background: var(--av-info-soft);    border-color: var(--av-info);    color: var(--av-info); }
+
+#toast-container > div {
+    border-radius: var(--av-r);
+    box-shadow: var(--av-shadow-md);
+    opacity: 1;
+    font-size: .875rem;
+}
+
+@media (max-width: 575.98px) {
+    /* Keep toasts clear of the tab bar. */
+    #toast-container.toast-bottom-right,
+    #toast-container.toast-bottom-full-width {
+        bottom: calc(var(--av-bottomnav-h) + var(--av-safe-b) + 10px);
+    }
+}
+
+.av-body .swal2-popup {
+    border-radius: var(--av-r-lg);
+    background: var(--av-surface);
+    color: var(--av-text);
+    font-family: var(--av-font);
+}
+
+.av-body .swal2-title { color: var(--av-text); font-size: 1.125rem; }
+.av-body .swal2-html-container { color: var(--av-text-2); font-size: .875rem; }
+
+.av-body .swal2-styled.swal2-confirm {
+    background: var(--av-primary-solid) !important;
+    border-radius: var(--av-r-sm) !important;
+}
+
+.av-body .swal2-styled.swal2-cancel {
+    background: var(--av-surface-3) !important;
+    color: var(--av-text-2) !important;
+    border-radius: var(--av-r-sm) !important;
+}
+
+.av-empty {
+    padding: 40px 20px;
+    text-align: center;
+    color: var(--av-muted);
+}
+
+.av-empty__icon {
+    width: 52px;
+    height: 52px;
+    margin: 0 auto 12px;
+    display: grid;
+    place-items: center;
+    border-radius: var(--av-r);
+    background: var(--av-surface-3);
+    color: var(--av-faint);
+}
+
+.av-empty__title {
+    margin: 0 0 4px;
+    font-size: .9375rem;
+    font-weight: 650;
+    color: var(--av-text);
+}
+
+.av-empty__text {
+    margin: 0 auto 16px;
+    max-width: 380px;
+    font-size: .8438rem;
+}
+
+.av-skeleton {
+    border-radius: var(--av-r-xs);
+    background: linear-gradient(90deg, var(--av-surface-3) 25%, var(--av-border) 37%, var(--av-surface-3) 63%);
+    background-size: 400% 100%;
+    animation: av-shimmer 1.3s ease infinite;
+}
+
+@keyframes av-shimmer {
+    0% { background-position: 100% 50%; }
+    100% { background-position: 0 50%; }
+}
+
+/* Tabs -------------------------------------------------------------------- */
+.av-body .nav-tabs {
+    gap: 2px;
+    border-bottom: 1px solid var(--av-border);
+    flex-wrap: nowrap;
+    overflow-x: auto;
+    overflow-y: hidden;
+    scrollbar-width: none;
+    -webkit-overflow-scrolling: touch;
+}
+
+.av-body .nav-tabs::-webkit-scrollbar { display: none; }
+
+.av-body .nav-tabs .nav-link {
+    /* flex + gap so the icon-margin reset above cannot close the gap between
+       a tab's glyph and its label */
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+    padding: 10px 14px;
+    border: 0;
+    border-bottom: 2px solid transparent;
+    border-radius: 0;
+    color: var(--av-muted);
+    font-size: .875rem;
+    font-weight: 600;
+    white-space: nowrap;
+}
+
+.av-body .nav-tabs .nav-link:hover { color: var(--av-text); border-bottom-color: var(--av-border-strong); }
+
+.av-body .nav-tabs .nav-link.active {
+    background: transparent;
+    color: var(--av-primary);
+    border-bottom-color: var(--av-primary);
+}
+
+/* Segmented control — better than tabs for 2-3 mutually exclusive filters. */
+.av-seg {
+    display: inline-flex;
+    padding: 3px;
+    border-radius: var(--av-r-sm);
+    background: var(--av-surface-3);
+    gap: 2px;
+    max-width: 100%;
+    overflow-x: auto;
+    scrollbar-width: none;
+}
+
+.av-seg::-webkit-scrollbar { display: none; }
+
+.av-seg__item {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 7px;
+    flex: 1 0 auto;
+    padding: 7px 14px;
+    border: 0;
+    border-radius: var(--av-r-xs);
+    background: transparent;
+    color: var(--av-muted);
+    font-size: .8125rem;
+    font-weight: 600;
+    white-space: nowrap;
+    cursor: pointer;
+}
+
+.av-seg__item.is-active {
+    background: var(--av-surface);
+    color: var(--av-text);
+    box-shadow: var(--av-shadow-xs);
+}
+
+/* Collapsible filter panel — filters take too much room on a phone. */
+.av-filters__toggle { width: 100%; }
+
+@media (min-width: 992px) {
+    .av-filters__toggle { display: none; }
+    .av-filters__body { display: block !important; }
+}
+
+/* Bottom sheet ------------------------------------------------------------
+   Desktop keeps the panel in the page (a filter rail, a settings column).
+   Below 992px the same markup becomes a sheet that slides up from the bottom,
+   within reach of a thumb. */
+.av-sheet__handle,
+.av-sheet__head,
+.av-sheet__foot { display: none; }
+
+.av-sheet-backdrop { display: none; }
+
+.av-sheet-count {
+    display: inline-grid;
+    place-items: center;
+    min-width: 18px;
+    height: 18px;
+    margin-left: 2px;
+    padding: 0 5px;
+    border-radius: var(--av-r-pill);
+    background: var(--av-primary-solid);
+    color: var(--av-primary-solid-fg);
+    font-size: .6875rem;
+    font-weight: 700;
+}
+
+/* The sheet trigger only exists on phones — on desktop the same panel is a
+   rail that is already on screen. !important because `.av-body .btn` is more
+   specific than a bare attribute selector and would otherwise show it. */
+@media (min-width: 992px) {
+    [data-sheet-open] { display: none !important; }
+}
+
+@media (max-width: 991.98px) {
+
+    .av-sheet-backdrop {
+        display: block;
+        position: fixed;
+        inset: 0;
+        z-index: var(--av-z-backdrop);
+        background: rgba(16, 16, 16, .5);
+        opacity: 0;
+        pointer-events: none;
+        transition: opacity .22s ease;
+    }
+
+    .av-sheet-backdrop.is-open {
+        opacity: 1;
+        pointer-events: auto;
+    }
+
+    .av-sheet {
+        position: fixed;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        z-index: var(--av-z-drawer);
+        display: flex;
+        flex-direction: column;
+        max-height: 88dvh;
+        /* !important: sheets are often existing elements that already carry a
+           Bootstrap spacing utility, and BS5 emits those with !important. A
+           leftover margin-bottom leaves the sheet peeking above the fold when
+           it is supposed to be translated fully off-screen. */
+        margin: 0 !important;
+        padding: 0;
+        background: var(--av-surface);
+        border: 0;
+        border-radius: var(--av-r-lg) var(--av-r-lg) 0 0;
+        box-shadow: var(--av-shadow-lg);
+        transform: translateY(101%);
+        transition: transform .26s cubic-bezier(.32, .72, 0, 1);
+        will-change: transform;
+    }
+
+    .av-sheet.is-open { transform: translateY(0); }
+
+    .av-sheet__handle {
+        display: block;
+        flex: 0 0 auto;
+        width: 40px;
+        height: 4px;
+        margin: 10px auto 2px;
+        border-radius: var(--av-r-pill);
+        background: var(--av-border-strong);
+    }
+
+    .av-sheet__head {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 10px;
+        flex: 0 0 auto;
+        padding: 8px 16px 12px;
+        border-bottom: 1px solid var(--av-border);
+    }
+
+    .av-sheet__title {
+        margin: 0;
+        font-size: 1rem;
+        font-weight: 650;
+    }
+
+    .av-sheet__body {
+        flex: 1 1 auto;
+        overflow-y: auto;
+        overscroll-behavior: contain;
+        -webkit-overflow-scrolling: touch;
+        padding: 14px 16px;
+    }
+
+    .av-sheet__foot {
+        display: flex;
+        gap: 8px;
+        flex: 0 0 auto;
+        padding: 12px 16px calc(12px + var(--av-safe-b));
+        border-top: 1px solid var(--av-border);
+        background: var(--av-surface);
+    }
+
+    .av-sheet__foot > .btn { flex: 1 1 auto; }
+}
+
+/* Bulk action bar — appears when rows are selected. Sits above the tab bar. */
+.av-bulkbar {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex-wrap: wrap;
+    padding: 10px 12px;
+    margin-bottom: 12px;
+    border: 1px solid var(--av-primary);
+    border-radius: var(--av-r);
+    background: var(--av-primary-soft);
+}
+
+.av-bulkbar[hidden] { display: none; }
+.av-bulkbar__count { font-weight: 700; color: var(--av-primary); }
+
+@media (max-width: 991.98px) {
+    .av-bulkbar {
+        position: fixed;
+        left: 0;
+        right: 0;
+        bottom: calc(var(--av-bottomnav-h) + var(--av-safe-b));
+        z-index: var(--av-z-savebar);
+        margin: 0;
+        border-radius: 0;
+        border-width: 1px 0 0;
+        background: var(--av-surface);
+        box-shadow: 0 -4px 16px rgba(16, 16, 16, .12);
+        overflow-x: auto;
+        flex-wrap: nowrap;
+        scrollbar-width: none;
+    }
+
+    .av-bulkbar::-webkit-scrollbar { display: none; }
+    .av-bulkbar > * { flex: 0 0 auto; }
+}
+
+/* Android soft keyboard is up: get the fixed chrome out of the way so the
+   field being typed into, and its save button, stay on screen. */
+body.av-keyboard .av-tabbar,
+body.av-keyboard .av-bulkbar,
+body.av-keyboard #av-top {
+    display: none !important;
+}
+
+body.av-keyboard .av-savebar {
+    position: static;
+    box-shadow: none;
+}
+
+body.av-keyboard .av-content {
+    padding-bottom: 24px;
+}
+
+/* Touch devices ----------------------------------------------------------
+   Material's minimum is 48dp. Hover styles also have to go: on Android they
+   latch after a tap and leave rows and cards stuck in a hovered state. */
+@media (pointer: coarse) {
+    .av-body .btn,
+    .av-body .form-control,
+    .av-body .form-select,
+    .av-nav__link,
+    .av-nav__toggle,
+    .av-menu__item {
+        min-height: 48px;
+    }
+
+    .av-body .btn-sm {
+        min-height: 40px;
+        padding: 8px 14px;
+    }
+
+    .av-body .btn-icon,
+    .av-iconbtn {
+        min-width: 44px;
+        min-height: 44px;
+    }
+
+    .av-body .form-check-input {
+        width: 1.35em;
+        height: 1.35em;
+    }
+
+    .av-body .table tbody tr:hover > * { background: transparent; }
+    .av-body .stat-card:hover,
+    .av-body .table-card:hover,
+    .av-stat:hover { transform: none !important; box-shadow: var(--av-shadow-xs); }
+    .av-nav__link:hover,
+    .av-nav__toggle:hover { background: transparent; }
+    .av-nav__link.is-active:hover { background: var(--av-primary-soft); }
+}
+
+/* -----------------------------------------------------------------------------
+   14. Legacy overrides
+   Pages written before this design system ship their own <style> blocks with
+   gradient headers and bespoke cards. Those blocks are pushed BEFORE this file,
+   so equal-specificity rules here win and the pages fall back into the system.
+   -------------------------------------------------------------------------- */
+.av-body .page-header {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 10px;
+    margin: 0 0 18px;
+    padding: 0;
+    background: transparent;
+    border: 0;
+    min-height: 0;
+}
+
+.av-body .page-title {
+    margin: 0;
+    font-size: 1.25rem;
+    font-weight: 700;
+    letter-spacing: -.015em;
+    color: var(--av-text);
+}
+
+.av-body .pageheader-btn { margin-left: auto; }
+
+/* The bundled bootstrap.min.css ships with its breadcrumb divider variable
+   overwritten to the string "https://laravel8.spruko.com/", which the theme
+   vendor left behind. Every breadcrumb separator rendered as that URL. */
+.av-body .breadcrumb,
+.av-crumbs {
+    --bs-breadcrumb-divider: "/";
+}
+
+.av-body .breadcrumb-item + .breadcrumb-item::before {
+    content: "/" !important;
+    padding-right: .5rem;
+    color: var(--av-faint);
+}
+
+.av-body .breadcrumb {
+    margin: 0;
+    padding: 0;
+    background: transparent;
+    font-size: .75rem;
+}
+
+.av-body .breadcrumb-item,
+.av-body .breadcrumb-item a { color: var(--av-muted); }
+.av-body .breadcrumb-item.active { color: var(--av-faint); }
+
+/* Neutralise the purple/indigo gradient banners used by the "Centre" pages. */
+.av-body .order-centre-header,
+.av-body .product-centre-header,
+.av-body .giveaway-centre-header,
+.av-body .notification-centre-header,
+.av-body .customer-centre-header,
+.av-body .centre-header {
+    background: var(--av-surface) !important;
+    color: var(--av-text) !important;
+    border: 1px solid var(--av-border);
+    border-radius: var(--av-r);
+    padding: 16px !important;
+    margin-bottom: 16px !important;
+    box-shadow: var(--av-shadow-xs);
+}
+
+.av-body .order-centre-header *,
+.av-body .product-centre-header *,
+.av-body .giveaway-centre-header *,
+.av-body .notification-centre-header *,
+.av-body .customer-centre-header *,
+.av-body .centre-header * {
+    color: var(--av-text) !important;
+}
+
+.av-body .order-centre-header p,
+.av-body .product-centre-header p,
+.av-body .giveaway-centre-header p,
+.av-body .notification-centre-header p,
+.av-body .customer-centre-header p,
+.av-body .centre-header p {
+    color: var(--av-muted) !important;
+    margin-bottom: 0;
+}
+
+/* Ad-hoc stat cards defined per page. */
+.av-body .stat-card,
+.av-body .table-card,
+.av-body .welcome-card,
+.av-body .oc-filter-card,
+.av-body .oc-table-card,
+.av-body .phase-placeholder {
+    background: var(--av-surface) !important;
+    border: 1px solid var(--av-border) !important;
+    border-radius: var(--av-r) !important;
+    box-shadow: var(--av-shadow-xs) !important;
+    color: var(--av-text);
+}
+
+.av-body .stat-card:hover,
+.av-body .table-card:hover { transform: none !important; }
+
+.av-body .stat-card h3,
+.av-body .stat-value { color: var(--av-text) !important; }
+
+.av-body .stat-label,
+.av-body .stat-card small { color: var(--av-muted) !important; }
+
+.av-body .nav-tabs-custom {
+    background: transparent;
+    border-bottom: 1px solid var(--av-border);
+    padding: 0;
+    margin-bottom: 16px;
+}
+
+.av-body .nav-tabs-custom .nav-link { padding: 10px 14px; color: var(--av-muted) !important; }
+.av-body .nav-tabs-custom .nav-link.active { color: var(--av-primary) !important; }
+.av-body .nav-tabs-custom .nav-link.active::after { background: var(--av-primary); }
+
+/* Mobile spacing normalisation ------------------------------------------
+   Pages written before this design system set their padding once, for a
+   desktop layout: 1.5–2rem on every card and section, with no breakpoint. On a
+   360px screen that hands ~13% of the width to padding twice over (page gutter
+   + card), and stacks 24px gaps between every block, so very little content
+   fits above the fold. These are the container classes that recur across the
+   legacy pages; the values match the design system's own cards. */
+@media (max-width: 767.98px) {
+    .av-body .stat-card,
+    .av-body .filter-section,
+    .av-body .nc-card,
+    .av-body .table-card,
+    .av-body .welcome-card,
+    .av-body .phase-placeholder,
+    .av-body .oc-settings-section,
+    .av-body .custom-card > .card-body,
+    .av-body .panel {
+        padding: 14px !important;
+    }
+
+    .av-body .nc-header,
+    .av-body .product-centre-header,
+    .av-body .order-centre-header,
+    .av-body .giveaway-centre-header,
+    .av-body .centre-header {
+        padding: 14px !important;
+    }
+
+    /* Stacked blocks were spaced for a wide screen too. */
+    .av-body .filter-section,
+    .av-body .nc-header,
+    .av-body .nc-card,
+    .av-body .table-card {
+        margin-bottom: 12px !important;
+    }
+
+    /* Legacy stat tiles sit in col-md-3, which becomes full width below the md
+       breakpoint — four tiles then eat four whole screens before any content.
+       Two-up matches the dashboard's own stat grid. */
+    .av-body .row > [class*="col-md-"]:has(> .stat-card),
+    .av-body .row > [class*="col-lg-"]:has(> .stat-card) {
+        flex: 0 0 50%;
+        max-width: 50%;
+        width: 50%;
+        padding-left: 5px;
+        padding-right: 5px;
+    }
+
+    .av-body .stat-card {
+        margin-bottom: 10px;
+        height: calc(100% - 10px);
+    }
+
+    /* The icon block above the figure is what makes these tiles so tall. */
+    .av-body .stat-card .stat-icon {
+        width: 32px !important;
+        height: 32px !important;
+        font-size: 15px !important;
+        margin-bottom: 8px !important;
+        border-radius: var(--av-r-sm) !important;
+    }
+
+    .av-body .stat-card h3 { font-size: 1.25rem; }
+    .av-body .stat-card small { font-size: .75rem; line-height: 1.3; }
+
+    /* Centre headers put the title and a Refresh button in one flex row; on a
+       phone that squeezes the heading into three wrapped lines. */
+    .av-body .product-centre-header > .d-flex,
+    .av-body .order-centre-header > .d-flex,
+    .av-body .giveaway-centre-header > .d-flex,
+    .av-body .nc-header {
+        flex-wrap: wrap;
+        gap: 10px;
+    }
+
+    .av-body .product-centre-header h2,
+    .av-body .giveaway-centre-header h2 { font-size: 1.25rem; }
+
+    .av-body .stats-grid,
+    .av-body .row.mt-4 { margin-top: 12px !important; }
+
+    /* Legacy tab strips reserve 2rem of side padding per tab. */
+    .av-body .nav-tabs-custom { padding: 0 !important; margin-bottom: 12px !important; }
+    .av-body .nav-tabs-custom .nav-link { padding: 10px 14px !important; }
+
+    /* Bootstrap spacing utilities used as page rhythm on desktop. */
+    .av-body .av-content > .mb-5,
+    .av-body .av-content > .mt-5,
+    .av-body .av-content > .py-5 { margin-bottom: 16px !important; margin-top: 0 !important; }
+}
+
+.av-body .oc-table thead th,
+.av-body .modern-table thead th {
+    background: var(--av-surface-2);
+    color: var(--av-muted);
+    border-bottom: 1px solid var(--av-border);
+}
+
+.av-body .oc-table tbody td,
+.av-body .modern-table tbody td { color: var(--av-text); }
+
+/* -----------------------------------------------------------------------------
+   15. Utilities
+   -------------------------------------------------------------------------- */
+.av-stack { display: flex; flex-direction: column; gap: 12px; }
+.av-row { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+.av-row--between { justify-content: space-between; }
+.av-grow { flex: 1 1 auto; min-width: 0; }
+.av-truncate { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.av-nums { font-variant-numeric: tabular-nums; }
+.av-mono { font-family: var(--av-font-mono); font-size: .8125rem; }
+
+/* Visibility helpers only ever *remove* an element, never force a display
+   value — so a hidden flex/grid element keeps its own layout when shown. */
+@media (min-width: 992px) {
+    .av-only-mobile { display: none !important; }
+}
+
+@media (max-width: 991.98px) {
+    .av-only-desktop { display: none !important; }
+}
+
+.av-sr {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    white-space: nowrap;
+    border: 0;
+}
+
+/* Horizontal scroller for chips/filters on narrow screens. */
+.av-hscroll {
+    display: flex;
+    gap: 8px;
+    overflow-x: auto;
+    padding-bottom: 4px;
+    margin-bottom: -4px;
+    scrollbar-width: none;
+    -webkit-overflow-scrolling: touch;
+}
+
+.av-hscroll::-webkit-scrollbar { display: none; }
+.av-hscroll > * { flex: 0 0 auto; }
+
+/* =============================================================================
+   16. Additional responsive fixes for legacy pages
+   ============================================================================= */
+
+/* Skip navigation link — accessibility */
+.av-skip-link {
+    position: absolute;
+    top: -100%;
+    left: 16px;
+    z-index: 99999;
+    padding: 8px 16px;
+    background: var(--av-primary);
+    color: #fff;
+    border-radius: var(--av-r-sm);
+    font-weight: 600;
+    text-decoration: none;
+    font-size: .875rem;
+    transition: top 0.2s;
+}
+
+.av-skip-link:focus {
+    top: 8px;
+    color: #fff;
+}
+
+@media (max-width: 767.98px) {
+    /* Legacy page headers: wrap the d-flex action buttons */
+    .av-body .page-header {
+        gap: 8px;
+    }
+
+    .av-body .page-header > .d-flex,
+    .av-body .page-header > .ms-auto {
+        flex-wrap: wrap;
+        gap: 6px;
+        width: 100%;
+    }
+
+    .av-body .page-header > .ms-auto { margin-left: 0 !important; }
+
+    /* Legacy forms: ensure col-md-6 form fields get full width */
+    .av-body .row > .col-md-6 > .mb-3,
+    .av-body .row > .col-md-6 > .form-group {
+        margin-bottom: 12px;
+    }
+
+    /* container-fluid excessive padding on legacy pages */
+    .av-body .container-fluid {
+        padding-left: 12px;
+        padding-right: 12px;
+    }
+
+    /* Summernote editor toolbar overflow */
+    .av-body .note-toolbar {
+        overflow-x: auto;
+        flex-wrap: nowrap;
+        -webkit-overflow-scrolling: touch;
+    }
+
+    /* Custom toggle switch from legacy pages */
+    .av-body .switch {
+        width: 44px;
+        height: 22px;
+    }
+
+    .av-body .switch .slider:before {
+        height: 16px;
+        width: 16px;
+        left: 3px;
+        bottom: 3px;
+    }
+
+    /* Setmore Reviews: event card action buttons wrap */
+    .av-body .smr-event .d-flex {
+        flex-wrap: wrap;
+        gap: 6px;
+    }
+
+    /* Notification Centre: method block inner items */
+    .av-body .nc-method-block .d-flex {
+        flex-wrap: wrap;
+        gap: 6px;
+    }
+
+    /* Profile settings tab menu */
+    .av-body .tabs-menu1 .nav {
+        flex-wrap: nowrap;
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
+        scrollbar-width: none;
+    }
+
+    .av-body .tabs-menu1 .nav::-webkit-scrollbar { display: none; }
+
+    .av-body .tabs-menu1 .nav li a {
+        white-space: nowrap;
+        padding: 10px 14px;
+    }
+
+    /* Zip code radius stats */
+    .av-body .radius-stats {
+        flex-direction: column;
+    }
+    .av-body .radius-stat-card {
+        min-width: auto;
+    }
+
+    /* Giveaway/Product Centre stat cards on 360px: two-up */
+    .av-body .giveaway-centre-header .row > .col-md-3,
+    .av-body .product-centre-header + .row > .col-md-3 {
+        flex: 0 0 50%;
+        max-width: 50%;
+        padding-left: 5px;
+        padding-right: 5px;
+    }
+
+    /* Customer show page stat cards: two-up instead of full-width */
+    .av-body .row > .col-xl-3.col-lg-6.col-md-6 {
+        flex: 0 0 50%;
+        max-width: 50%;
+        padding-left: 5px;
+        padding-right: 5px;
+    }
+}
+
+/* ARIA: icon-only action buttons should have minimum tap target */
+.av-body .action-btn,
+.av-body .btn-sm:has(> i:only-child),
+.av-body .btn-sm:has(> .fa:only-child),
+.av-body .btn-sm:has(> .fe:only-child) {
+    min-width: 36px;
+    min-height: 36px;
+}
+
+/* =============================================================================
+   17. Dropdown menus — mobile-friendly
+   ============================================================================= */
+@media (max-width: 767.98px) {
+    /* Make dropdown menus usable on narrow screens */
+    .av-body .dropdown-menu {
+        position: fixed !important;
+        left: 12px !important;
+        right: 12px !important;
+        bottom: auto !important;
+        width: calc(100vw - 24px) !important;
+        max-height: 70vh;
+        overflow-y: auto;
+        transform: none !important;
+        border-radius: var(--av-r);
+        box-shadow: 0 8px 32px rgba(0,0,0,.18);
+        z-index: 1060;
+        font-size: .875rem;
+        padding: 6px 0;
+    }
+
+    .av-body .dropdown-menu .dropdown-item {
+        padding: 10px 16px;
+        white-space: normal;
+        word-wrap: break-word;
+    }
+
+    /* Ensure dropdown toggle buttons don't overflow */
+    .av-body .dropdown-toggle {
+        max-width: 100%;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+}
+
+/* =============================================================================
+   18. File upload areas — mobile-friendly (Dropify + custom upload areas)
+   ============================================================================= */
+@media (max-width: 767.98px) {
+    /* Dropify: reduce overall height and text */
+    .av-body .dropify-wrapper {
+        height: 120px !important;
+        min-height: 100px;
+    }
+
+    .av-body .dropify-wrapper .dropify-message span.file-icon {
+        font-size: 28px !important;
+    }
+
+    .av-body .dropify-wrapper .dropify-message p {
+        font-size: .8rem;
+        margin: 3px 0 0;
+    }
+
+    .av-body .dropify-wrapper .dropify-message {
+        padding: 0 10px;
+    }
+
+    /* Custom image-upload-area (giveaway create, etc.) */
+    .av-body .image-upload-area {
+        padding: 1.25rem !important;
+    }
+
+    .av-body .image-upload-area i,
+    .av-body .image-upload-area .fe {
+        font-size: 1.5rem !important;
+    }
+
+    .av-body .image-upload-area h5 {
+        font-size: .9rem !important;
+        margin-top: 0.5rem !important;
+    }
+
+    .av-body .image-upload-area p {
+        font-size: .8rem;
+        margin-bottom: 0;
+    }
+
+    .av-body .image-preview {
+        max-width: 200px;
+        max-height: 200px;
+    }
+}
+
+/* =============================================================================
+   19. Select2 dropdowns — mobile-friendly
+   ============================================================================= */
+@media (max-width: 767.98px) {
+    /* Prevent Select2 from overflowing horizontally, but let it size normally */
+    .av-body .select2-container {
+        max-width: 100% !important;
+    }
+
+    /* Keep the dropdown results box from exceeding the screen width */
+    .av-body .select2-dropdown {
+        max-width: calc(100vw - 20px) !important;
+    }
+
+    /* Improve tap targets slightly */
+    .av-body .select2-results__option {
+        padding: 10px 12px;
+        word-wrap: break-word;
+        white-space: normal;
+    }
+}
+
+/* =============================================================================
+   20. Custom Badges (preventing mobile table header sucking)
+   ============================================================================= */
+.av-badge {
+    display: inline-block;
+    padding: .25em .4em;
+    font-size: 75%;
+    font-weight: 700;
+    line-height: 1;
+    text-align: center;
+    white-space: nowrap;
+    vertical-align: baseline;
+    border-radius: .25rem;
+}
+
+/* Base colors matching Bootstrap */
+.badge-info { background-color: #17a2b8 !important; color: white !important; }
+.badge-secondary { background-color: #6c757d !important; color: white !important; }
+.badge-success { background-color: #28a745 !important; color: white !important; }
+.badge-danger { background-color: #dc3545 !important; color: white !important; }
+.badge-warning { background-color: #ffc107 !important; color: #212529 !important; }
+.badge-light { background-color: #f8f9fa !important; color: #212529 !important; }

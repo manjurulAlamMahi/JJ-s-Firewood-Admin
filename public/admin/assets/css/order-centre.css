@@ -1,0 +1,767 @@
+/* =============================================================================
+   Order Centre
+
+   Replaces the ~500 lines of page-local CSS that shipped with this view. That
+   block hardcoded an indigo/violet palette (#667eea → #764ba2) and laid the
+   page out desktop-first: a 780px right-hand drawer, a filter rail in a
+   col-lg-3, and a bulk bar that scrolled off the top of a phone.
+
+   Everything here is expressed in design-system tokens and is mobile-first.
+   Class names and element IDs are unchanged — ~3,800 lines of page JS bind to
+   them.
+
+   Loaded via @stack('page-styles'), i.e. after admin-v2.css, so the few rules
+   that must beat the design system can do so without !important.
+   ========================================================================== */
+
+/* -----------------------------------------------------------------------------
+   Tabs
+   -------------------------------------------------------------------------- */
+.oc-tabs {
+    display: flex;
+    gap: 2px;
+    margin-bottom: 16px;
+    padding-bottom: 0;
+    border-bottom: 1px solid var(--av-border);
+    list-style: none;
+    overflow-x: auto;
+    overflow-y: hidden;
+    scrollbar-width: none;
+    -webkit-overflow-scrolling: touch;
+}
+
+.oc-tabs::-webkit-scrollbar { display: none; }
+
+.oc-tabs .nav-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+    padding: 11px 14px;
+    border: 0;
+    border-bottom: 2px solid transparent;
+    border-radius: 0;
+    color: var(--av-muted);
+    font-size: .875rem;
+    font-weight: 600;
+    white-space: nowrap;
+}
+
+.oc-tabs .nav-link.active {
+    background: transparent;
+    color: var(--av-primary);
+    border-bottom-color: var(--av-primary);
+}
+
+/* -----------------------------------------------------------------------------
+   Bulk action bars
+
+   Two bars, two mechanisms already wired in the JS: #oc-bulk-bar toggles
+   `.active`, #oc-na-bulk-bar toggles Bootstrap's `.d-none`. Both are honoured.
+   -------------------------------------------------------------------------- */
+.oc-bulk-bar {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex-wrap: wrap;
+    padding: 10px 12px;
+    margin-bottom: 14px;
+    border: 1px solid var(--av-primary) !important;
+    border-radius: var(--av-r);
+    background: var(--av-primary-soft);
+    color: var(--av-text);
+    box-shadow: none;
+}
+
+#oc-bulk-bar { display: none; }
+#oc-bulk-bar.active { display: flex; }
+
+.oc-bulk-bar strong { color: var(--av-primary); }
+
+.oc-bulk-bar .btn-bulk {
+    min-height: 36px;
+    margin: 0;
+    padding: 7px 12px;
+    border: 1px solid var(--av-border-strong);
+    border-radius: var(--av-r-sm);
+    background: var(--av-surface);
+    color: var(--av-text-2);
+    font-size: .8125rem;
+    font-weight: 600;
+}
+
+.oc-bulk-bar .btn-bulk:hover {
+    background: var(--av-surface-3);
+    color: var(--av-text);
+}
+
+.oc-bulk-bar .btn-bulk:disabled { opacity: .5; }
+
+@media (max-width: 991.98px) {
+    /* Anchor to the bottom of the screen: the selection lives at the top of a
+       long list, but the thumb is at the bottom. */
+    .oc-bulk-bar {
+        position: fixed;
+        left: 0;
+        right: 0;
+        bottom: calc(var(--av-bottomnav-h) + var(--av-safe-b));
+        z-index: var(--av-z-savebar);
+        margin: 0;
+        border-radius: 0;
+        border-width: 1px 0 0 !important;
+        background: var(--av-surface);
+        box-shadow: 0 -4px 16px rgba(16, 16, 16, .14);
+        flex-wrap: nowrap;
+        overflow-x: auto;
+        scrollbar-width: none;
+    }
+
+    .oc-bulk-bar::-webkit-scrollbar { display: none; }
+    .oc-bulk-bar > *,
+    .oc-bulk-bar > div > * { flex: 0 0 auto; }
+    .oc-bulk-bar > div { display: flex; gap: 8px; align-items: center; flex-wrap: nowrap; }
+    .oc-bulk-bar .ms-auto { margin-left: 8px !important; }
+}
+
+/* Customer avatars in the order tables. Without an explicit size these fall
+   back to the image's intrinsic dimensions — the shared placeholder is 400px
+   square, so every row rendered a 400×400 thumbnail. */
+.oc-customer-avatar {
+    width: 36px;
+    height: 36px;
+    flex: 0 0 auto;
+    border-radius: 50%;
+    object-fit: cover;
+    background: var(--av-surface-3);
+}
+
+/* -----------------------------------------------------------------------------
+   Filter panel — a rail on desktop, a bottom sheet on a phone
+   -------------------------------------------------------------------------- */
+
+/* On desktop this is an ordinary card and needs its own padding; the sheet
+   variant supplies padding through .av-sheet__body instead. */
+@media (min-width: 992px) {
+    .oc-filter-card {
+        padding: 18px;
+    }
+}
+
+.oc-filter-card h6 {
+    margin-bottom: 8px;
+    font-size: .6875rem;
+    font-weight: 700;
+    letter-spacing: .05em;
+    text-transform: uppercase;
+    color: var(--av-muted);
+}
+
+.oc-filter-group {
+    margin-bottom: 16px;
+    padding-bottom: 16px;
+    border-bottom: 1px solid var(--av-border);
+}
+
+.oc-filter-group:last-child {
+    margin-bottom: 0;
+    padding-bottom: 0;
+    border-bottom: 0;
+}
+
+/* -----------------------------------------------------------------------------
+   Order drawer
+
+   Desktop keeps the side panel. Below 992px it becomes a full-height sheet —
+   a 780px panel on a 360px screen was simply the whole screen with a sliver of
+   dimmed list behind it.
+   -------------------------------------------------------------------------- */
+.oc-drawer-overlay {
+    position: fixed;
+    inset: 0;
+    z-index: var(--av-z-backdrop);
+    display: none;
+    background: rgba(16, 16, 16, .45);
+    -webkit-backdrop-filter: blur(2px);
+    backdrop-filter: blur(2px);
+}
+
+.oc-drawer {
+    position: fixed;
+    top: 0;
+    right: 0;
+    z-index: var(--av-z-drawer);
+    width: 780px;
+    max-width: 95vw;
+    height: 100%;
+    background: var(--av-surface);
+    border-left: 1px solid var(--av-border);
+    box-shadow: var(--av-shadow-lg);
+    overflow-y: auto;
+    overscroll-behavior: contain;
+    -webkit-overflow-scrolling: touch;
+    transform: translateX(100%);
+    transition: transform .28s cubic-bezier(.32, .72, 0, 1);
+    will-change: transform;
+}
+
+.oc-drawer.active { transform: translateX(0); }
+
+.oc-drawer-header {
+    position: sticky;
+    top: 0;
+    z-index: 5;
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 12px;
+    padding: 14px 16px;
+    background: var(--av-surface);
+    border-bottom: 1px solid var(--av-border);
+}
+
+.oc-drawer-header h5 { margin: 0; font-size: 1.125rem; }
+
+.oc-drawer-tabs {
+    position: sticky;
+    top: 66px;
+    z-index: 4;
+    display: flex;
+    gap: 2px;
+    padding: 0 8px;
+    background: var(--av-surface);
+    border-bottom: 1px solid var(--av-border);
+    overflow-x: auto;
+    scrollbar-width: none;
+    -webkit-overflow-scrolling: touch;
+}
+
+.oc-drawer-tabs::-webkit-scrollbar { display: none; }
+
+.oc-drawer-tabs button {
+    flex-shrink: 0;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 12px 12px;
+    border: 0;
+    border-bottom: 2px solid transparent;
+    background: none;
+    color: var(--av-muted);
+    font-size: .8438rem;
+    font-weight: 600;
+    white-space: nowrap;
+    cursor: pointer;
+}
+
+.oc-drawer-tabs button.active {
+    color: var(--av-primary);
+    border-bottom-color: var(--av-primary);
+}
+
+.oc-drawer-section { display: none; padding: 16px; }
+.oc-drawer-section.active { display: block; }
+
+@media (max-width: 991.98px) {
+    .oc-drawer {
+        width: 100%;
+        max-width: none;
+        height: 100dvh;
+        border-left: 0;
+        transform: translateY(100%);
+    }
+
+    .oc-drawer.active { transform: translateY(0); }
+
+    /* Clear the phone's on-screen navigation. */
+    .oc-drawer-section:last-of-type { padding-bottom: calc(24px + var(--av-safe-b)); }
+}
+
+/* -----------------------------------------------------------------------------
+   Drawer content blocks
+   -------------------------------------------------------------------------- */
+.oc-customer-card {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 12px 14px;
+    margin-bottom: 12px;
+    border: 1px solid var(--av-border);
+    border-radius: var(--av-r);
+    background: var(--av-surface-2);
+}
+
+.oc-customer-card img {
+    flex: 0 0 auto;
+    width: 48px;
+    height: 48px;
+    border-radius: 50%;
+    object-fit: cover;
+    background: var(--av-surface-3);
+}
+
+.oc-customer-card .fw-bold { font-size: 1rem; line-height: 1.3; color: var(--av-text); }
+.oc-customer-card .small, .oc-customer-card a { font-size: .875rem !important; }
+.oc-customer-link { cursor: pointer; color: var(--av-text-2); }
+.oc-customer-link:hover { color: var(--av-primary); text-decoration: underline; }
+
+/* Phone and email are tap-to-act on a phone — the whole point of running the
+   business from the handset. */
+.oc-contact-action {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    min-height: 32px;
+    color: var(--av-primary);
+    font-weight: 600;
+}
+
+.oc-delivery-card {
+    padding: 12px 14px;
+    margin-bottom: 12px;
+    border: 1px solid var(--av-border);
+    border-left: 3px solid var(--av-primary);
+    border-radius: var(--av-r);
+    background: var(--av-surface);
+}
+
+.oc-delivery-card .dc-header {
+    margin-bottom: 6px;
+    font-size: .6875rem;
+    font-weight: 700;
+    letter-spacing: .05em;
+    text-transform: uppercase;
+    color: var(--av-primary);
+}
+
+.oc-delivery-card .dc-address { font-size: .9375rem; font-weight: 500; color: var(--av-text); line-height: 1.5; }
+.oc-delivery-card .dc-contact { margin-top: 8px; font-size: .9375rem; color: var(--av-text); line-height: 1.6; }
+.oc-delivery-card .dc-contact i { width: 18px; color: var(--av-faint); }
+.oc-delivery-card .dc-method,
+.oc-delivery-card .dc-date { margin-top: 8px; font-size: .8125rem; color: var(--av-text-2); }
+.oc-delivery-card .dc-method { padding-top: 8px; border-top: 1px dashed var(--av-border); }
+.oc-delivery-card .dc-method strong { color: var(--av-text); }
+.oc-delivery-card .dc-date i { margin-right: 5px; color: var(--av-faint); }
+
+.oc-line-item {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 12px;
+    padding: 12px 0;
+    border-bottom: 1px solid var(--av-border);
+    font-size: .875rem;
+}
+
+.oc-line-item:last-child { border-bottom: none; }
+.oc-line-item .fw-semibold { font-size: .9375rem; color: var(--av-text); }
+.oc-line-item .fw-bold { font-size: .9375rem; color: var(--av-text); }
+
+/* Totals + payment summary cards */
+.oc-totals-card,
+.pay-card {
+    margin-top: 14px;
+    padding: 14px;
+    border: 1px solid var(--av-border);
+    border-radius: var(--av-r);
+    background: var(--av-surface-2);
+}
+
+.pay-card { margin: 0 0 12px; }
+
+.oc-totals-card .label-row,
+.pay-card .pay-card-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+    margin-bottom: 10px;
+    padding-bottom: 8px;
+    border-bottom: 1px dashed var(--av-border);
+}
+
+.oc-totals-card .label-row .h-label,
+.pay-card .pay-card-header .h-label {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: .6875rem;
+    font-weight: 700;
+    letter-spacing: .05em;
+    text-transform: uppercase;
+    color: var(--av-muted);
+}
+
+.pay-card .pay-card-header .h-label i { color: var(--av-primary); }
+.oc-totals-card .label-row .h-meta { font-size: .75rem; color: var(--av-faint); }
+
+.oc-totals-row,
+.pay-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    padding: 6px 0;
+    font-size: .875rem;
+}
+
+.oc-totals-row .label-l,
+.pay-row .label-l {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    color: var(--av-text-2);
+}
+
+.oc-totals-row .label-l i,
+.pay-row .label-l i { width: 18px; color: var(--av-faint); }
+.oc-totals-row .val, .pay-row .val { font-weight: 600; color: var(--av-text); }
+.oc-totals-row.discount .val { color: var(--av-success); }
+.oc-totals-row.refund .val, .pay-row.is-refund .val { color: var(--av-danger); }
+
+.oc-totals-row.grand,
+.pay-row.is-available {
+    margin-top: 8px;
+    padding: 10px 0 0;
+    border-top: 2px solid var(--av-border);
+}
+
+.oc-totals-row.grand .label-l,
+.pay-row.is-available .label-l { font-size: 1rem; font-weight: 700; color: var(--av-text); }
+
+/* The grand total was a gradient-clipped text fill, which renders as invisible
+   text wherever background-clip is unsupported. Plain brand colour instead. */
+.oc-totals-row.grand .val {
+    font-size: 1.375rem;
+    font-weight: 800;
+    color: var(--av-primary);
+}
+
+.pay-row.is-available .val { font-size: 1.25rem; font-weight: 800; color: var(--av-success); }
+.pay-row.is-available.zero .val { color: var(--av-muted); }
+
+.pay-trans-card {
+    padding: 12px 14px;
+    margin-bottom: 12px;
+    border: 1px solid var(--av-border);
+    border-radius: var(--av-r);
+    background: var(--av-surface);
+}
+
+.pay-trans-card .pay-trans-row {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+    padding: 5px 0;
+    font-size: .875rem;
+}
+
+.pay-trans-card .pay-trans-row .lbl { color: var(--av-muted); font-weight: 500; }
+
+.pay-trans-card .pay-trans-row .vl {
+    font-weight: 600;
+    color: var(--av-text);
+    text-align: right;
+    word-break: break-all;
+}
+
+.pay-trans-card .pay-trans-row .vl code {
+    padding: 2px 6px;
+    border-radius: var(--av-r-xs);
+    background: var(--av-surface-3);
+    color: var(--av-text-2);
+    font-size: .8125rem;
+}
+
+.pay-trans-card .status-pill,
+.oc-status-pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 3px 10px;
+    border-radius: var(--av-r-pill);
+    font-size: .75rem;
+    font-weight: 650;
+}
+
+.pay-trans-card .status-pill.completed,
+.oc-status-pill.connected { background: var(--av-success-soft); color: var(--av-success); }
+.pay-trans-card .status-pill.pending,
+.oc-status-pill.not-configured { background: var(--av-warning-soft); color: var(--av-warning); }
+.pay-trans-card .status-pill.failed,
+.oc-status-pill.error { background: var(--av-danger-soft); color: var(--av-danger); }
+
+.oc-status-dot { width: 8px; height: 8px; border-radius: 50%; background: currentColor; }
+
+.pay-action-card {
+    padding: 14px;
+    border: 1px solid var(--av-border);
+    border-radius: var(--av-r);
+    background: var(--av-surface);
+}
+
+.pay-action-card.danger { border-left: 3px solid var(--av-danger); background: var(--av-danger-soft); }
+.pay-action-card.warn { border-left: 3px solid var(--av-warning); background: var(--av-warning-soft); }
+.pay-action-card h6 { margin-bottom: 4px; font-size: 1rem; font-weight: 700; }
+.pay-action-card .helper { margin-bottom: 12px; font-size: .8125rem; color: var(--av-text-2); line-height: 1.5; }
+
+/* Notes, timeline, tags */
+.oc-note {
+    position: relative;
+    padding: 12px;
+    margin-bottom: 10px;
+    border: 1px solid var(--av-border);
+    border-radius: var(--av-r-sm);
+    background: var(--av-surface-2);
+}
+
+.oc-note .author { font-size: .8438rem; font-weight: 600; color: var(--av-text); }
+.oc-note .meta { font-size: .75rem; color: var(--av-faint); }
+.oc-note .body { margin-top: 6px; font-size: .875rem; color: var(--av-text-2); white-space: pre-wrap; }
+
+.oc-note .delete-btn {
+    position: absolute;
+    top: 6px;
+    right: 6px;
+    width: 32px;
+    height: 32px;
+    border: 0;
+    background: none;
+    color: var(--av-danger);
+    cursor: pointer;
+}
+
+.oc-timeline-item { display: flex; padding: 10px 0; border-bottom: 1px solid var(--av-border); }
+.oc-timeline-item:last-child { border-bottom: none; }
+
+.oc-timeline-dot {
+    flex-shrink: 0;
+    width: 8px;
+    height: 8px;
+    margin: 6px 12px 0 0;
+    border-radius: 50%;
+    background: var(--av-primary);
+}
+
+.oc-timeline-content { flex: 1; min-width: 0; }
+.oc-timeline-content .desc { font-size: .875rem; color: var(--av-text); }
+.oc-timeline-content .meta { margin-top: 2px; font-size: .75rem; color: var(--av-faint); }
+
+.oc-tag-input { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 8px; }
+
+.oc-tag-pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 5px 11px;
+    border-radius: var(--av-r-pill);
+    color: #fff;
+    font-size: .75rem;
+    font-weight: 650;
+}
+
+.oc-tag-pill .remove { cursor: pointer; opacity: .85; }
+
+.oc-tag-add-btn {
+    min-height: 32px;
+    padding: 5px 11px;
+    border: 1px dashed var(--av-border-strong);
+    border-radius: var(--av-r-pill);
+    background: var(--av-surface-3);
+    color: var(--av-text-2);
+    font-size: .75rem;
+    cursor: pointer;
+}
+
+.oc-quick-actions { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+
+.oc-quick-actions .form-label {
+    margin-bottom: 4px;
+    font-size: .6875rem;
+    font-weight: 700;
+    letter-spacing: .04em;
+    text-transform: uppercase;
+    color: var(--av-muted);
+}
+
+@media (max-width: 575.98px) {
+    .oc-quick-actions { grid-template-columns: 1fr; }
+}
+
+.oc-empty { padding: 32px 16px; text-align: center; color: var(--av-muted); font-size: .875rem; }
+
+/* -----------------------------------------------------------------------------
+   Today's deliveries widget
+   -------------------------------------------------------------------------- */
+.oc-today-fab {
+    position: fixed;
+    right: 16px;
+    bottom: calc(var(--av-bottomnav-h) + var(--av-safe-b) + 16px);
+    z-index: var(--av-z-savebar);
+    width: 52px;
+    height: 52px;
+    border: 0;
+    border-radius: 50%;
+    background: var(--av-success);
+    color: #fff;
+    font-size: 1.25rem;
+    box-shadow: var(--av-shadow-md);
+    cursor: pointer;
+}
+
+.oc-today-fab .oc-today-count {
+    position: absolute;
+    top: -4px;
+    right: -4px;
+    min-width: 22px;
+    height: 22px;
+    padding: 0 6px;
+    border: 2px solid var(--av-surface);
+    border-radius: var(--av-r-pill);
+    background: var(--av-danger);
+    color: #fff;
+    font-size: .6875rem;
+    font-weight: 700;
+    line-height: 18px;
+}
+
+.oc-today-panel {
+    position: fixed;
+    right: 16px;
+    bottom: calc(var(--av-bottomnav-h) + var(--av-safe-b) + 78px);
+    z-index: var(--av-z-savebar);
+    display: none;
+    flex-direction: column;
+    width: 400px;
+    max-width: calc(100vw - 32px);
+    max-height: 68dvh;
+    overflow: hidden;
+    border: 1px solid var(--av-border);
+    border-radius: var(--av-r-lg);
+    background: var(--av-surface);
+    box-shadow: var(--av-shadow-lg);
+}
+
+.oc-today-panel.active { display: flex; }
+
+.oc-today-panel-header {
+    padding: 14px 16px;
+    background: var(--av-success);
+    color: #fff;
+}
+
+.oc-today-panel-body { flex: 1; overflow-y: auto; padding: 6px; }
+
+.oc-today-item {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    padding: 12px;
+    border-bottom: 1px solid var(--av-border);
+}
+
+.oc-today-item:last-child { border-bottom: none; }
+.oc-today-item .top-row { display: flex; align-items: flex-start; justify-content: space-between; gap: 8px; }
+.oc-today-item .order-link { color: var(--av-primary); font-weight: 600; cursor: pointer; }
+.oc-today-item .meta { font-size: .8125rem; color: var(--av-muted); }
+
+@media (min-width: 992px) {
+    .oc-today-fab { bottom: 24px; right: 24px; }
+    .oc-today-panel { bottom: 88px; right: 24px; }
+}
+
+/* The widget must not sit on top of a bulk bar or a keyboard. */
+body.av-keyboard .oc-today-fab,
+body.av-keyboard .oc-today-panel { display: none !important; }
+
+/* -----------------------------------------------------------------------------
+   Settings sub-tabs
+   -------------------------------------------------------------------------- */
+.oc-settings-nav-wrap {
+    margin-bottom: 16px;
+    border-bottom: 1px solid var(--av-border);
+}
+
+ul.oc-settings-nav.nav.nav-tabs {
+    gap: 2px;
+    padding-left: 0;
+    margin-bottom: 0;
+    border-bottom: none;
+    flex-wrap: nowrap;
+    overflow-x: auto;
+    scrollbar-width: none;
+}
+
+ul.oc-settings-nav.nav.nav-tabs::-webkit-scrollbar { display: none; }
+
+ul.oc-settings-nav.nav.nav-tabs > li.nav-item > a.nav-link {
+    padding: 11px 14px;
+    border: 0;
+    border-bottom: 2px solid transparent;
+    border-radius: 0;
+    background: transparent;
+    color: var(--av-muted);
+    font-size: .875rem;
+    font-weight: 600;
+    white-space: nowrap;
+}
+
+ul.oc-settings-nav.nav.nav-tabs > li.nav-item > a.nav-link.active {
+    color: var(--av-primary);
+    border-bottom-color: var(--av-primary);
+}
+
+.oc-settings-section {
+    max-width: 720px;
+    padding: 16px;
+    margin-bottom: 14px;
+    border: 1px solid var(--av-border);
+    border-radius: var(--av-r);
+    background: var(--av-surface);
+}
+
+.oc-settings-section-title {
+    margin-bottom: 14px;
+    padding-bottom: 8px;
+    border-bottom: 1px solid var(--av-border);
+    font-size: .6875rem;
+    font-weight: 700;
+    letter-spacing: .05em;
+    text-transform: uppercase;
+    color: var(--av-muted);
+}
+
+/* -----------------------------------------------------------------------------
+   Order list
+   -------------------------------------------------------------------------- */
+.oc-table-card {
+    padding: 14px;
+    border: 1px solid var(--av-border);
+    border-radius: var(--av-r);
+    background: var(--av-surface);
+    box-shadow: var(--av-shadow-xs);
+}
+
+.oc-table tbody tr { cursor: pointer; }
+
+@media (max-width: 767.98px) {
+    /* Rows are cards here (admin-v2.js); the card padding would double up. */
+    .oc-table-card { padding: 12px; }
+}
+
+/* Plain-language chips explaining why an order needs attention. */
+.oc-reason {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    padding: 3px 9px;
+    border-radius: var(--av-r-pill);
+    font-size: .6875rem;
+    font-weight: 650;
+    white-space: nowrap;
+}
+
+.oc-reason--pay { background: var(--av-danger-soft); color: var(--av-danger); }
+.oc-reason--date { background: var(--av-warning-soft); color: var(--av-warning); }
+.oc-reason--late { background: var(--av-danger-soft); color: var(--av-danger); }
+.oc-reason--confirm { background: var(--av-info-soft); color: var(--av-info); }

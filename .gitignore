@@ -1,0 +1,55 @@
+# Dependencies
+/vendor/
+/node_modules/
+
+# Environment and secrets
+.env
+.env.*
+!.env.example
+.ftp-deploy-sync-state.json
+.ftpquota
+*credentials*.json
+*service-account*.json
+firebase-credentials.json
+/storage/app/firebase-credentials.json
+*.pem
+*.p12
+
+# Generated Laravel data
+/bootstrap/cache/*
+!/bootstrap/cache/.gitignore
+/storage/*.key
+/storage/app/public/*
+!/storage/app/public/.gitignore
+/storage/framework/cache/*
+!/storage/framework/cache/.gitignore
+/storage/framework/sessions/*
+!/storage/framework/sessions/.gitignore
+/storage/framework/views/*
+!/storage/framework/views/.gitignore
+/storage/logs/*
+!/storage/logs/.gitignore
+/public/hot
+/public/storage
+
+# User uploads and local artefacts
+/public/uploads/
+/public/profile/
+*.log
+/error_log
+*.sqlite
+*.sqlite3
+*.swp
+*.swo
+.DS_Store
+Thumbs.db
+
+# Test and build output
+.phpunit.result.cache
+.phpunit.cache
+/coverage/
+/build/
+
+# IDE files
+/.idea/
+/.vscode/

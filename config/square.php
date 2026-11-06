@@ -1,0 +1,10 @@
+<?php
+
+return [
+    'application_id' => env('SQUARE_APPLICATION_ID'),
+    'access_token' => env('SQUARE_ACCESS_TOKEN'),
+    'location_id' => env('SQUARE_LOCATION_ID'),
+    'environment' => env('SQUARE_ENVIRONMENT', 'production'),
+    'webhook_signature_key' => env('SQUARE_WEBHOOK_SIGNATURE_KEY'),
+    'webhook_url' => env('SQUARE_WEBHOOK_URL'),
+];

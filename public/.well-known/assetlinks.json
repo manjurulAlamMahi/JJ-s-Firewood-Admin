@@ -1,0 +1,13 @@
+[{
+  "relation": ["delegate_permission/common.handle_all_urls"],
+  "target": {
+    "namespace": "android_app",
+    "package_name": "com.firewood.perth", 
+    "sha256_cert_fingerprints": [
+      "6A:BF:33:D0:93:7A:F8:EC:EE:D7:83:24:3A:99:65:BA:26:DF:C3:73:BD:AC:FF:DF:6B:99:7B:D3:E5:49:E9:24",
+      "97:53:6B:52:A4:90:3B:72:56:F9:FF:98:B8:49:B8:D8:E4:20:63:B1:EA:96:69:E8:C6:9A:26:25:0D:6A:57:68",
+      "0E:63:7D:AD:72:B1:98:6E:52:B8:5E:59:23:CB:BE:E1:CD:8A:63:A4",
+      "61:6B:7F:9F:57:4B:18:09:BB:F6:FF:78:70:FC:4B:B8:83:72:85:BB:96:68:FD:3A:73:8B:E3:22:4B:5A:26:0F"
+    ]
+  }
+}]

@@ -1,0 +1,23 @@
+{
+  "applinks": {
+    "apps": [],
+    "details": [
+      {
+        "appID": "DQBPNRV89P.com.firewood.perth",
+        "paths": [
+          "/app/*"
+        ]
+      }
+    ]
+  },
+  "webcredentials": {
+    "apps": [
+      "DQBPNRV89P.com.firewood.perth"
+    ]
+  },
+  "appclips": {
+    "apps": [
+      "DQBPNRV89P.com.firewood.perth.Clip"
+    ]
+  }
+}

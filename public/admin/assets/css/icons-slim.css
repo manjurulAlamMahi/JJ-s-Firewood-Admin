@@ -1,0 +1,15 @@
+/* -----------------------------------------------------------------------------
+   Icon fonts, trimmed.
+
+   The theme's plugins/icons/icons.css pulls in twelve icon families (~10 MB of
+   font files). Only two are referenced anywhere in this admin:
+
+     fa fa-* / fas fa-*  — used inside DataTables render callbacks
+     fe fe-*             — a handful of legacy buttons
+
+   Everything else was dead weight on a mobile connection. Add an @import back
+   here if a page ever needs another family.
+   -------------------------------------------------------------------------- */
+
+@import url("../plugins/iconfonts/font-awesome/css/font-awesome.min.css");
+@import url("../plugins/iconfonts/feather/feather.css");

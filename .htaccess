@@ -1,0 +1,23 @@
+# Laravel is deployed with its full source at the domain document root
+# (app/, public/, vendor/, etc. all live here) instead of pointing the
+# document root at /public directly. This forwards every request into
+# the public/ folder so Laravel's front controller (public/index.php)
+# can handle routing, while public/.htaccess takes over from there.
+
+# Block access to hidden dotfiles (.env, .git, .ftp*, etc.) and sensitive files
+<FilesMatch "(^\.|^composer\.(json|lock)$|^package(-lock)?\.json$|^phpunit\.xml$|^artisan$|^error_log$|\.(sql|sqlite|log|env|example|stub)$)">
+    <IfModule mod_authz_core.c>
+        Require all denied
+    </IfModule>
+    <IfModule !mod_authz_core.c>
+        Order allow,deny
+        Deny from all
+    </IfModule>
+</FilesMatch>
+
+<IfModule mod_rewrite.c>
+    RewriteEngine On
+
+    RewriteCond %{REQUEST_URI} !^/public/
+    RewriteRule ^(.*)$ public/$1 [L]
+</IfModule>
